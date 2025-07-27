@@ -1,156 +1,233 @@
 <!-- Contact Form -->
 <form id="contact-form" class="fs-form">
-    <!-- Inline toast (success / error) -->
-    <div id="form-message" class="fs-field col-span-full" style="display:none;">
-      <div class="fs-toast"></div>
-    </div>
-  
-    <div class="fs-field">
-      <label class="fs-label" for="firstName">First Name</label>
-      <input class="fs-input" id="firstName" name="firstName" type="text" placeholder="Jane" required/>
-    </div>
-  
-    <div class="fs-field">
-      <label class="fs-label" for="lastName">Last Name</label>
-      <input class="fs-input" id="lastName" name="lastName" type="text" placeholder="Doe" required/>
-    </div>
-  
-    <div class="fs-field">
-      <label class="fs-label" for="email">Email Address</label>
-      <input class="fs-input" id="email" name="email" type="email" placeholder="jane.doe@example.com" required/>
-    </div>
-  
-    <div class="fs-field">
-      <label class="fs-label" for="message">Your Message</label>
-      <textarea class="fs-textarea" id="message" name="message" placeholder="What’s on your mind?" required></textarea>
-    </div>
-  
-    <!-- Newsletter opt‑in -->
-    <div class="fs-field">
-      <label class="fs-label" style="flex-direction:row;align-items:center;gap:0.5rem;">
-        <input type="checkbox" id="subscribe" name="subscribe" class="fs-checkbox"/>
-        Subscribe to our newsletter
-      </label>
-    </div>
-  
-    <!-- reCAPTCHA -->
-    <div class="fs-field col-span-full">
-      <div class="g-recaptcha" data-sitekey="6LdvPYwrAAAAANh6TUvU1J-1xaH2oNVKM7x3qyuP"></div>
-    </div>
-  
-    <div class="fs-button-group">
-      <button class="fs-button" type="submit">Submit</button>
-    </div>
-  </form>
-  
-  <!-- reCAPTCHA script -->
-  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-  
-  <script>
-    document.getElementById('contact-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-  
-      const msgBox = document.getElementById('form-message');
-      const toast  = msgBox.querySelector('.fs-toast');
-      msgBox.style.display = 'none';
-      toast.textContent    = '';
-  
-      const payload = {
-        firstName: e.target.firstName.value.trim(),
-        lastName : e.target.lastName.value.trim(),
-        email    : e.target.email.value.trim(),
-        message  : e.target.message.value.trim(),
-        subscribe: e.target.subscribe.checked,
-        token    : grecaptcha.getResponse(),
-      };
-  
-      if (!payload.token) {
-        toast.textContent = 'Please complete the CAPTCHA.';
+  <!-- Inline toast (success / error) -->
+  <div id="form-message" class="fs-field col-span-full" style="display:none;">
+    <div class="fs-toast"></div>
+  </div>
+
+  <div class="fs-field">
+    <label class="fs-label" for="firstName">First Name</label>
+    <input class="fs-input" id="firstName" name="firstName" type="text" placeholder="Jane" required/>
+  </div>
+
+  <div class="fs-field">
+    <label class="fs-label" for="lastName">Last Name</label>
+    <input class="fs-input" id="lastName" name="lastName" type="text" placeholder="Doe" required/>
+  </div>
+
+  <div class="fs-field">
+    <label class="fs-label" for="email">Email Address</label>
+    <input class="fs-input" id="email" name="email" type="email" placeholder="jane.doe@example.com" required/>
+  </div>
+
+  <div class="fs-field">
+    <label class="fs-label" for="message">How can we help?</label>
+    <textarea class="fs-textarea" id="message" name="message" placeholder="What's on your mind?" required></textarea>
+  </div>
+
+  <!-- Newsletter opt‑in -->
+  <div class="fs-field">
+    <label class="fs-label fs-checkbox-label" for="subscribe">
+      <input type="checkbox" id="subscribe" name="subscribe" class="fs-checkbox"/>
+      Subscribe to our newsletter
+    </label>
+  </div>
+
+  <!-- reCAPTCHA -->
+  <div class="fs-field col-span-full">
+    <div class="g-recaptcha" data-sitekey="6LdvPYwrAAAAANh6TUvU1J-1xaH2oNVKM7x3qyuP"></div>
+  </div>
+
+  <div class="fs-button-group">
+    <button class="fs-button" type="submit">Submit</button>
+  </div>
+</form>
+
+<!-- reCAPTCHA script -->
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+<script>
+  document.getElementById('contact-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const msgBox = document.getElementById('form-message');
+    const toast  = msgBox.querySelector('.fs-toast');
+    msgBox.style.display = 'none';
+    toast.textContent    = '';
+
+    const payload = {
+      firstName: e.target.firstName.value.trim(),
+      lastName : e.target.lastName.value.trim(),
+      email    : e.target.email.value.trim(),
+      message  : e.target.message.value.trim(),
+      subscribe: e.target.subscribe.checked,
+      token    : grecaptcha.getResponse(),
+    };
+
+    if (!payload.token) {
+      toast.textContent = 'Please complete the CAPTCHA.';
+      msgBox.style.display = 'block';
+      return;
+    }
+
+    try {
+      const res  = await fetch('https://ifvdoqjmveakhgpojufu.functions.supabase.co/contactForm', {
+        method : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body   : JSON.stringify(payload),
+      });
+      const json = await res.json();
+
+      if (json.success) {
+        toast.textContent = 'Thanks for reaching out! We\'ll be in touch soon.';
         msgBox.style.display = 'block';
-        return;
+        e.target.reset();
+        grecaptcha.reset();
+      } else {
+        throw new Error(json.error || 'Something went wrong');
       }
-  
-      try {
-        const res  = await fetch('https://ifvdoqjmveakhgpojufu.functions.supabase.co/contactForm', {
-          method : 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body   : JSON.stringify(payload),
-        });
-        const json = await res.json();
-  
-        if (json.success) {
-          toast.textContent = 'Thanks for reaching out! We’ll be in touch soon.';
-          msgBox.style.display = 'block';
-          e.target.reset();
-          grecaptcha.reset();
-        } else {
-          throw new Error(json.error || 'Something went wrong');
-        }
-      } catch (err) {
-        toast.textContent = 'Oops: ' + err.message;
-        msgBox.style.display = 'block';
-      }
-    });
-  </script>
-  
-  <style>
-    @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap");
-  
-    :root{
-      --font-body:"DM Sans",-apple-system,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
-      --primary:#144be1;
-      --primary-hover:#333;
-      --border:#94a3b8;
-      --muted:#475569;
-      --text:#0f172a;
-      --highlight:#8ec6ff;
-      --padding:5%;
+    } catch (err) {
+      toast.textContent = 'Oops: ' + err.message;
+      msgBox.style.display = 'block';
     }
-  
-    *,::before,::after{box-sizing:border-box;margin:0;padding:0;border:0}
-    body{font-family:var(--font-body);padding:var(--padding);-webkit-font-smoothing:antialiased}
-  
-    .fs-form{display:grid;row-gap:1.25rem}
-    .fs-field{display:flex;flex-direction:column;row-gap:.375rem}
-    .col-span-full{grid-column:1 / -1}
-  
-    .fs-label{font-weight:500;font-size:.9rem;color:var(--text)}
-    .fs-input,.fs-textarea{
-      width:100%;padding:.65rem .75rem;font-size:1rem;border-radius:.375rem;
-      box-shadow:var(--border) 0 0 0 1px inset;outline:none;
-      color:var(--text);
-    }
-    .fs-textarea{resize:vertical;height:6rem}
-    .fs-input:focus-visible,.fs-textarea:focus-visible{
-      box-shadow:var(--primary) 0 0 0 1.5px inset;
-      outline:3px solid var(--highlight);
-    }
-  
-    .fs-button-group{display:flex;justify-content:flex-start}
-    .fs-button{
-      background:#000!important;color:#fff;border-radius:.375rem;
-      padding:1rem 2rem;cursor:pointer;font-size:.875rem;font-weight:500;
-      transition:background-color .2s;
-    }
-    .fs-button:hover,.fs-button:focus-visible{background:var(--primary-hover)!important}
-  
-    /* Checkbox */
-    .fs-checkbox{
-      appearance:none;width:1rem;height:1rem;border:1px solid var(--border);
-      border-radius:.25rem;display:inline-block;position:relative;cursor:pointer;
-    }
-    .fs-checkbox:checked{
-      background:var(--primary);border-color:var(--primary);
-    }
-    .fs-checkbox:checked::after{
-      content:"";position:absolute;top:2px;left:2px;width:6px;height:10px;
-      border:2px solid #fff;border-top:0;border-left:0;transform:rotate(45deg);
-    }
-  
-    /* Toast */
-    .fs-toast{
-      background:#e0f2fe;color:#0369a1;padding:1rem;border-radius:.375rem;
-      text-align:center;font-weight:500;width:100%;
-    }
-  </style>
-  
+  });
+</script>
+
+<style>
+  @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap");
+
+  :root {
+    --font-body: "DM Sans", -apple-system, "system-ui", "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+    --primary: #144be1;
+    --primary-hover: #333;
+    --border: #94a3b8;
+    --muted: #475569;
+    --text: #0f172a;
+    --highlight: #8ec6ff;
+    --padding: 5%;
+  }
+
+  *, ::before, ::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  body {
+    font-family: var(--font-body);
+    padding: var(--padding);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .fs-form {
+    display: grid;
+    row-gap: 1.25rem;
+  }
+
+  .fs-field {
+    display: flex;
+    flex-direction: column;
+    row-gap: .375rem;
+  }
+
+  .col-span-full {
+    grid-column: 1 / -1;
+  }
+
+  .fs-label {
+    font-weight: 500;
+    font-size: .9rem;
+    color: var(--text);
+  }
+
+  /* make label a proper flex row and centre items */
+  .fs-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .fs-input, .fs-textarea {
+    width: 100%;
+    padding: .65rem .75rem;
+    font-size: 1rem;
+    border-radius: .375rem;
+    box-shadow: var(--border) 0 0 0 1px inset;
+    outline: none;
+    color: var(--text);
+  }
+
+  .fs-textarea {
+    resize: vertical;
+    height: 6rem;
+  }
+
+  .fs-input:focus-visible, .fs-textarea:focus-visible {
+    box-shadow: var(--primary) 0 0 0 1.5px inset;
+    outline: 3px solid var(--highlight);
+  }
+
+  .fs-button-group {
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .fs-button {
+    background: #000 !important;
+    color: #fff;
+    border-radius: .375rem;
+    padding: 1rem 2rem;
+    cursor: pointer;
+    font-size: .875rem;
+    font-weight: 500;
+    transition: background-color .2s;
+  }
+
+  .fs-button:hover, .fs-button:focus-visible {
+    background: var(--primary-hover) !important;
+  }
+
+  /* Checkbox */
+  .fs-checkbox {
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    border: 1px solid var(--border);
+    border-radius: .25rem;
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .fs-checkbox:checked {
+    background: var(--primary);
+    border-color: var(--primary);
+  }
+
+  /* centre the tick inside the box */
+  .fs-checkbox:checked::after {
+    content: "";
+    position: absolute;
+    top: 0.125rem;
+    right: 0.275rem;
+    width: 0.35rem;
+    height: 0.5rem;
+    border: 0.125rem solid #fff;
+    border-top: 0;
+    border-left: 0;
+    transform: rotate(45deg);
+  }
+
+  /* Toast */
+  .fs-toast {
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 1rem;
+    border-radius: .375rem;
+    text-align: center;
+    font-weight: 500;
+    width: 100%;
+  }
+</style>

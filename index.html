@@ -235,5 +235,17 @@
       }
     });
   </script>
+
+  <script>
+  function reportHeight() {
+    const h = document.documentElement.scrollHeight;
+    // send a message to the parent window
+    parent.postMessage({ type: 'FORM_HEIGHT', height: h }, '*');
+  }
+  // report on load & on any resize
+  window.addEventListener('load', reportHeight);
+  window.addEventListener('resize', reportHeight);
+</script>
+
 </body>
 </html>

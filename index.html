@@ -7,10 +7,8 @@
 
   <!-- Google reCAPTCHA -->
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-
   <style>
     @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap");
-
     :root{
       --font-body:"DM Sans",-apple-system,"system-ui","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
       --primary:#144be1;
@@ -22,49 +20,39 @@
       --danger-bg:#fee2e2;
       --padding:0%;
     }
-
     *,::before,::after{box-sizing:border-box;margin:0;padding:0;border:0}
-
     body{
       font-family:var(--font-body);
       padding:var(--padding);
       -webkit-font-smoothing:antialiased;
     }
-
     .fs-form{display:grid;row-gap:1.25rem}
     .fs-field{display:flex;flex-direction:column;row-gap:.375rem}
     .col-span-full{grid-column:1 / -1}
-
     .fs-label{font-weight:500;font-size:.9rem;color:var(--text)}
     .fs-required::after{content:" *"; color:var(--danger); font-weight:700}
-
     .fs-input,.fs-textarea{
       width:100%;padding:.65rem .75rem;font-size:1rem;border-radius:.375rem;
       box-shadow:var(--border) 0 0 0 1px inset;outline:none;color:var(--text);
     }
     .fs-textarea{resize:vertical;height:6rem}
-
     .fs-input:focus-visible,.fs-textarea:focus-visible{
       box-shadow:var(--primary) 0 0 0 1.5px inset;outline:3px solid var(--highlight);
     }
-
     .fs-input.fs-invalid,.fs-textarea.fs-invalid{
       box-shadow:var(--danger) 0 0 0 1.5px inset;
       outline:3px solid var(--danger-bg);
     }
-
     .fs-error{
       font-size:.85rem; line-height:1.2; color:var(--danger); display:none;
     }
     .fs-error.show{display:block}
-
     .fs-button-group{display:flex;justify-content:flex-start}
     .fs-button{
       background:#000 !important;color:#fff;border-radius:.375rem;padding:1rem 2rem;cursor:pointer;
       font-size:.875rem;font-weight:500;transition:background-color .2s;
     }
     .fs-button:hover,.fs-button:focus-visible{background:var(--primary-hover) !important}
-
     .fs-checkbox-label{display:flex;align-items:center;gap:.5rem}
     .fs-checkbox{
       appearance:none;width:1rem;height:1rem;border:1px solid var(--border);border-radius:.25rem;position:relative;cursor:pointer;flex-shrink:0;
@@ -73,11 +61,8 @@
     .fs-checkbox:checked::after{
       content:"";position:absolute;top:.25rem;left:.325rem;width:.35rem;height:.5rem;border:.125rem solid #fff;border-top:0;border-left:0;transform:rotate(45deg);
     }
-
     .fs-toast{background:#e0f2fe;color:#0369a1;padding:1rem;border-radius:.375rem;text-align:center;font-weight:500;width:100%}
     .fs-toast.error{background:var(--danger-bg); color:var(--danger)}
-
-    /* Added for consistent placeholder sizing */
     .fs-input::placeholder,
     .fs-textarea::placeholder {
       font-size: 1rem;
@@ -93,43 +78,36 @@
     <div id="form-message" class="fs-field col-span-full" style="display:none;">
       <div class="fs-toast" role="status" aria-live="polite"></div>
     </div>
-
     <div class="fs-field">
       <label class="fs-label fs-required" for="firstName">First Name</label>
       <input class="fs-input" id="firstName" name="firstName" type="text" placeholder="Jane" autocomplete="given-name" />
       <span class="fs-error" id="firstName-error"></span>
     </div>
-
     <div class="fs-field">
       <label class="fs-label fs-required" for="lastName">Last Name</label>
       <input class="fs-input" id="lastName" name="lastName" type="text" placeholder="Doe" autocomplete="family-name" />
       <span class="fs-error" id="lastName-error"></span>
     </div>
-
     <div class="fs-field">
       <label class="fs-label fs-required" for="email">Email Address</label>
       <input class="fs-input" id="email" name="email" type="email" placeholder="jane.doe@example.com" autocomplete="email" />
       <span class="fs-error" id="email-error"></span>
     </div>
-
     <div class="fs-field">
       <label class="fs-label fs-required" for="message">How can we help?</label>
       <textarea class="fs-textarea" id="message" name="message" placeholder="What's on your mind?"></textarea>
       <span class="fs-error" id="message-error"></span>
     </div>
-
     <div class="fs-field">
       <label class="fs-label fs-checkbox-label" for="subscribe">
         <input type="checkbox" id="subscribe" name="subscribe" class="fs-checkbox" />
         Subscribe to our newsletter
       </label>
     </div>
-
     <div class="fs-field col-span-full">
       <div class="g-recaptcha" data-sitekey="6LdNC5ErAAAAAEyHMQj82JA8_CCMzlQK1In23uql"></div>
       <span class="fs-error" id="captcha-error"></span>
     </div>
-
     <div class="fs-button-group">
       <button class="fs-button" type="submit">Submit</button>
     </div>
@@ -138,7 +116,6 @@
     const form    = document.getElementById('contact-form');
     const msgBox  = document.getElementById('form-message');
     const toast   = msgBox.querySelector('.fs-toast');
-  
     const els = {
       firstName: document.getElementById('firstName'),
       lastName : document.getElementById('lastName'),
@@ -147,9 +124,7 @@
       subscribe: document.getElementById('subscribe'),
       captchaErr: document.getElementById('captcha-error')
     };
-  
     // ---- Height reporting ----------------------------------------------------
-  
     let rhTimer;
     function reportHeight() {
       const h = document.documentElement.scrollHeight;
@@ -162,29 +137,23 @@
         requestAnimationFrame(() => requestAnimationFrame(reportHeight));
       }, delay);
     }
-  
     // Observe any size change in body (covers toast, errors, textarea growth, etc.)
     const ro = new ResizeObserver(() => reportHeightDebounced(20));
     ro.observe(document.body);
-  
     // ---- Toast helpers -------------------------------------------------------
-  
     function showToast(message, isError = false){
       toast.textContent = message;
       toast.classList.toggle('error', isError);
       msgBox.style.display = 'block';
       reportHeightDebounced(); // account for the newly visible toast
     }
-  
     function clearToast(){
       msgBox.style.display = 'none';
       toast.textContent = '';
       toast.classList.remove('error');
       reportHeightDebounced();
     }
-  
     // ---- Validation ----------------------------------------------------------
-  
     function setError(inputEl, message){
       const errEl = document.getElementById(inputEl.id + '-error');
       if (errEl){
@@ -196,7 +165,6 @@
       inputEl.setAttribute('aria-describedby', errEl ? errEl.id : '');
       reportHeightDebounced(); // error lines add height
     }
-  
     function clearError(inputEl){
       const errEl = document.getElementById(inputEl.id + '-error');
       if (errEl){
@@ -208,15 +176,12 @@
       inputEl.removeAttribute('aria-describedby');
       reportHeightDebounced();
     }
-  
     function validate(){
       let valid = true;
-  
       // Reset all errors
       [els.firstName, els.lastName, els.email, els.message].forEach(clearError);
       els.captchaErr.textContent = '';
       els.captchaErr.classList.remove('show');
-  
       if (!els.firstName.value.trim()){
         setError(els.firstName, 'First name is required.');
         valid = false;
@@ -225,7 +190,6 @@
         setError(els.lastName, 'Last name is required.');
         valid = false;
       }
-  
       const emailVal = els.email.value.trim();
       const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal);
       if (!emailVal){
@@ -235,7 +199,6 @@
         setError(els.email, 'Please enter a valid email address.');
         valid = false;
       }
-  
       const msgVal = els.message.value.trim();
       if (!msgVal){
         setError(els.message, 'Message is required.');
@@ -244,7 +207,6 @@
         setError(els.message, 'Please provide a little more detail (at least 5 characters).');
         valid = false;
       }
-  
       const token = grecaptcha.getResponse();
       if (!token){
         els.captchaErr.textContent = 'Please complete the CAPTCHA.';
@@ -252,25 +214,20 @@
         valid = false;
         reportHeightDebounced();
       }
-  
       return { valid, token };
     }
-  
     // Revalidate on input
     [els.firstName, els.lastName, els.email, els.message].forEach(el=>{
       el.addEventListener('input', ()=> clearError(el));
     });
-  
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
       clearToast();
-  
       const { valid, token } = validate();
       if (!valid){
         showToast('Please fix the errors highlighted below.', true);
         return;
       }
-  
       const payload = {
         firstName: els.firstName.value.trim(),
         lastName : els.lastName.value.trim(),
@@ -279,17 +236,28 @@
         subscribe: els.subscribe.checked,
         token
       };
-  
       try{
         const res  = await fetch('https://ifvdoqjmveakhgpojufu.functions.supabase.co/contactForm', {
           method: 'POST',
           headers:{ 'Content-Type':'application/json' },
           body: JSON.stringify(payload)
         });
-  
         const json = await res.json();
-  
         if (json.success){
+          // Push form submission data to the dataLayer
+          window.dataLayer = window.dataLayer || [];
+          window.dataLayer.push({
+            event: 'formSubmission',
+            formId: form.id,
+            formName: 'Contact Form',
+            firstName: els.firstName.value.trim(),
+            lastName: els.lastName.value.trim(),
+            email: els.email.value.trim(),
+            messageLength: els.message.value.trim().length,
+            subscribe: els.subscribe.checked,
+            recaptchaCompleted: true,
+            submissionTime: new Date().toISOString()
+          });
           showToast("Thanks for reaching out! We'll be in touch soon.");
           form.reset();
           grecaptcha.reset();
@@ -300,28 +268,6 @@
         showToast('Oops: ' + err.message, true);
       }
     });
-  
-if (json.success){
-  // Push form submission data to the dataLayer
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push({
-    event: 'formSubmission',
-    formId: form.id,
-    formName: 'Contact Form',
-    firstName: els.firstName.value.trim(),
-    lastName: els.lastName.value.trim(),
-    email: els.email.value.trim(),
-    messageLength: els.message.value.trim().length,
-    subscribe: els.subscribe.checked,
-    recaptchaCompleted: true,
-    submissionTime: new Date().toISOString()
-  });
-
-  showToast("Thanks for reaching out! We'll be in touch soon.");
-  form.reset();
-  grecaptcha.reset();
-}
-
     // Initial & window events
     window.addEventListener('load',  () => reportHeightDebounced(0));
     window.addEventListener('resize', () => reportHeightDebounced(0));

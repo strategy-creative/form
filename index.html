@@ -271,12 +271,19 @@
 
         if (json.success){
           // GA4 – no PII
-          dl('generate_lead', {
-            form_id: FORM_ID,
-            form_name: FORM_NAME,
-            subscribe: !!payload.subscribe,
-            message_len: payload.message.length
-          });
+         dl('generate_lead', {
+  form_id: FORM_ID,
+  form_name: FORM_NAME,
+  subscribe: !!payload.subscribe,
+  message_len: payload.message.length,
+
+  // User‑provided data for GA4 EC – GTM will read these via UPD variable
+  enhanced_conversions: {
+    email: payload.email,
+    first_name: payload.firstName,
+    last_name: payload.lastName
+  }
+});
           // Google Ads – enhanced conversions (GTM will hash)
           dl('ads_ec_lead', {
             form_id: FORM_ID,

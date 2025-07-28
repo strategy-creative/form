@@ -126,8 +126,179 @@
       <button class="fs-button" type="submit">Submit</button>
     </div>
   </form>
-
   <script>
+    const form    = document.getElementById('contact-form');
+    const msgBox  = document.getElementById('form-message');
+    const toast   = msgBox.querySelector('.fs-toast');
+  
+    const els = {
+      firstName: document.getElementById('firstName'),
+      lastName : document.getElementById('lastName'),
+      email    : document.getElementById('email'),
+      message  : document.getElementById('message'),
+      subscribe: document.getElementById('subscribe'),
+      captchaErr: document.getElementById('captcha-error')
+    };
+  
+    // ---- Height reporting ----------------------------------------------------
+  
+    let rhTimer;
+    function reportHeight() {
+      const h = document.documentElement.scrollHeight;
+      parent.postMessage({ type: 'FORM_HEIGHT', height: h }, '*');
+    }
+    function reportHeightDebounced(delay = 60) {
+      clearTimeout(rhTimer);
+      rhTimer = setTimeout(() => {
+        // double RAF to ensure layout is fully settled
+        requestAnimationFrame(() => requestAnimationFrame(reportHeight));
+      }, delay);
+    }
+  
+    // Observe any size change in body (covers toast, errors, textarea growth, etc.)
+    const ro = new ResizeObserver(() => reportHeightDebounced(20));
+    ro.observe(document.body);
+  
+    // ---- Toast helpers -------------------------------------------------------
+  
+    function showToast(message, isError = false){
+      toast.textContent = message;
+      toast.classList.toggle('error', isError);
+      msgBox.style.display = 'block';
+      reportHeightDebounced(); // account for the newly visible toast
+    }
+  
+    function clearToast(){
+      msgBox.style.display = 'none';
+      toast.textContent = '';
+      toast.classList.remove('error');
+      reportHeightDebounced();
+    }
+  
+    // ---- Validation ----------------------------------------------------------
+  
+    function setError(inputEl, message){
+      const errEl = document.getElementById(inputEl.id + '-error');
+      if (errEl){
+        errEl.textContent = message;
+        errEl.classList.add('show');
+      }
+      inputEl.classList.add('fs-invalid');
+      inputEl.setAttribute('aria-invalid', 'true');
+      inputEl.setAttribute('aria-describedby', errEl ? errEl.id : '');
+      reportHeightDebounced(); // error lines add height
+    }
+  
+    function clearError(inputEl){
+      const errEl = document.getElementById(inputEl.id + '-error');
+      if (errEl){
+        errEl.textContent = '';
+        errEl.classList.remove('show');
+      }
+      inputEl.classList.remove('fs-invalid');
+      inputEl.removeAttribute('aria-invalid');
+      inputEl.removeAttribute('aria-describedby');
+      reportHeightDebounced();
+    }
+  
+    function validate(){
+      let valid = true;
+  
+      // Reset all errors
+      [els.firstName, els.lastName, els.email, els.message].forEach(clearError);
+      els.captchaErr.textContent = '';
+      els.captchaErr.classList.remove('show');
+  
+      if (!els.firstName.value.trim()){
+        setError(els.firstName, 'First name is required.');
+        valid = false;
+      }
+      if (!els.lastName.value.trim()){
+        setError(els.lastName, 'Last name is required.');
+        valid = false;
+      }
+  
+      const emailVal = els.email.value.trim();
+      const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal);
+      if (!emailVal){
+        setError(els.email, 'Email is required.');
+        valid = false;
+      } else if (!emailOk){
+        setError(els.email, 'Please enter a valid email address.');
+        valid = false;
+      }
+  
+      const msgVal = els.message.value.trim();
+      if (!msgVal){
+        setError(els.message, 'Message is required.');
+        valid = false;
+      } else if (msgVal.length < 5){
+        setError(els.message, 'Please provide a little more detail (at least 5 characters).');
+        valid = false;
+      }
+  
+      const token = grecaptcha.getResponse();
+      if (!token){
+        els.captchaErr.textContent = 'Please complete the CAPTCHA.';
+        els.captchaErr.classList.add('show');
+        valid = false;
+        reportHeightDebounced();
+      }
+  
+      return { valid, token };
+    }
+  
+    // Revalidate on input
+    [els.firstName, els.lastName, els.email, els.message].forEach(el=>{
+      el.addEventListener('input', ()=> clearError(el));
+    });
+  
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      clearToast();
+  
+      const { valid, token } = validate();
+      if (!valid){
+        showToast('Please fix the errors highlighted below.', true);
+        return;
+      }
+  
+      const payload = {
+        firstName: els.firstName.value.trim(),
+        lastName : els.lastName.value.trim(),
+        email    : els.email.value.trim(),
+        message  : els.message.value.trim(),
+        subscribe: els.subscribe.checked,
+        token
+      };
+  
+      try{
+        const res  = await fetch('https://ifvdoqjmveakhgpojufu.functions.supabase.co/contactForm', {
+          method: 'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify(payload)
+        });
+  
+        const json = await res.json();
+  
+        if (json.success){
+          showToast("Thanks for reaching out! We'll be in touch soon.");
+          form.reset();
+          grecaptcha.reset();
+        } else {
+          throw new Error(json.error || 'Something went wrong');
+        }
+      } catch(err){
+        showToast('Oops: ' + err.message, true);
+      }
+    });
+  
+    // Initial & window events
+    window.addEventListener('load',  () => reportHeightDebounced(0));
+    window.addEventListener('resize', () => reportHeightDebounced(0));
+  </script>
+  
+  <!--<script>
     const form    = document.getElementById('contact-form');
     const msgBox  = document.getElementById('form-message');
     const toast   = msgBox.querySelector('.fs-toast');
@@ -280,6 +451,6 @@
     }
     window.addEventListener('load', reportHeight);
     window.addEventListener('resize', reportHeight);
-  </script>
+  </script> !-->
 </body>
 </html>

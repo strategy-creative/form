@@ -5,32 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Contact Form</title>
 
+  <!-- GTM inside the iframe -->
+  <script>
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});
+    var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;
+    j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-XXXXXXX');
+    window.dataLayer = window.dataLayer || [];
+    function dl(event, params={}) { window.dataLayer.push({ event, ...params }); }
+  </script>
+
   <!-- Google reCAPTCHA -->
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
   <style>
     @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap");
+
     :root{
       --font-body:"DM Sans",-apple-system,"system-ui","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-      --primary:#144be1;
-      --primary-hover:#333;
-      --border:#94a3b8;
-      --text:#0f172a;
-      --highlight:#8ec6ff;
-      --danger:#dc2626;
-      --danger-bg:#fee2e2;
-      --padding:0%;
+      --primary:#144be1; --primary-hover:#333; --border:#94a3b8; --text:#0f172a;
+      --highlight:#8ec6ff; --danger:#dc2626; --danger-bg:#fee2e2; --padding:0%;
     }
     *,::before,::after{box-sizing:border-box;margin:0;padding:0;border:0}
-    body{
-      font-family:var(--font-body);
-      padding:var(--padding);
-      -webkit-font-smoothing:antialiased;
-    }
+    body{font-family:var(--font-body);padding:var(--padding);-webkit-font-smoothing:antialiased;}
     .fs-form{display:grid;row-gap:1.25rem}
     .fs-field{display:flex;flex-direction:column;row-gap:.375rem}
-    .col-span-full{grid-column:1 / -1}
     .fs-label{font-weight:500;font-size:.9rem;color:var(--text)}
-    .fs-required::after{content:" *"; color:var(--danger); font-weight:700}
+    .fs-required::after{content:" *";color:var(--danger);font-weight:700}
     .fs-input,.fs-textarea{
       width:100%;padding:.65rem .75rem;font-size:1rem;border-radius:.375rem;
       box-shadow:var(--border) 0 0 0 1px inset;outline:none;color:var(--text);
@@ -40,13 +41,12 @@
       box-shadow:var(--primary) 0 0 0 1.5px inset;outline:3px solid var(--highlight);
     }
     .fs-input.fs-invalid,.fs-textarea.fs-invalid{
-      box-shadow:var(--danger) 0 0 0 1.5px inset;
-      outline:3px solid var(--danger-bg);
+      box-shadow:var(--danger) 0 0 0 1.5px inset;outline:3px solid var(--danger-bg);
     }
-    .fs-error{
-      font-size:.85rem; line-height:1.2; color:var(--danger); display:none;
-    }
+    .fs-error{font-size:.85rem;line-height:1.2;color:var(--danger);display:none}
     .fs-error.show{display:block}
+    .fs-toast{background:#e0f2fe;color:#0369a1;padding:1rem;border-radius:.375rem;text-align:center;font-weight:500;width:100%}
+    .fs-toast.error{background:var(--danger-bg);color:var(--danger)}
     .fs-button-group{display:flex;justify-content:flex-start}
     .fs-button{
       background:#000 !important;color:#fff;border-radius:.375rem;padding:1rem 2rem;cursor:pointer;
@@ -61,61 +61,64 @@
     .fs-checkbox:checked::after{
       content:"";position:absolute;top:.25rem;left:.325rem;width:.35rem;height:.5rem;border:.125rem solid #fff;border-top:0;border-left:0;transform:rotate(45deg);
     }
-    .fs-toast{background:#e0f2fe;color:#0369a1;padding:1rem;border-radius:.375rem;text-align:center;font-weight:500;width:100%}
-    .fs-toast.error{background:var(--danger-bg); color:var(--danger)}
-    .fs-input::placeholder,
-    .fs-textarea::placeholder {
-      font-size: 1rem;
-      color: #64748b;
-      opacity: 1;
-      font-family: var(--font-body);
-    }
   </style>
 </head>
 <body>
-  <!-- Contact Form -->
+
   <form id="contact-form" class="fs-form" novalidate>
-    <div id="form-message" class="fs-field col-span-full" style="display:none;">
+    <div id="form-message" class="fs-field" style="display:none;">
       <div class="fs-toast" role="status" aria-live="polite"></div>
     </div>
+
     <div class="fs-field">
       <label class="fs-label fs-required" for="firstName">First Name</label>
       <input class="fs-input" id="firstName" name="firstName" type="text" placeholder="Jane" autocomplete="given-name" />
       <span class="fs-error" id="firstName-error"></span>
     </div>
+
     <div class="fs-field">
       <label class="fs-label fs-required" for="lastName">Last Name</label>
       <input class="fs-input" id="lastName" name="lastName" type="text" placeholder="Doe" autocomplete="family-name" />
       <span class="fs-error" id="lastName-error"></span>
     </div>
+
     <div class="fs-field">
       <label class="fs-label fs-required" for="email">Email Address</label>
       <input class="fs-input" id="email" name="email" type="email" placeholder="jane.doe@example.com" autocomplete="email" />
       <span class="fs-error" id="email-error"></span>
     </div>
+
     <div class="fs-field">
       <label class="fs-label fs-required" for="message">How can we help?</label>
       <textarea class="fs-textarea" id="message" name="message" placeholder="What's on your mind?"></textarea>
       <span class="fs-error" id="message-error"></span>
     </div>
+
     <div class="fs-field">
       <label class="fs-label fs-checkbox-label" for="subscribe">
         <input type="checkbox" id="subscribe" name="subscribe" class="fs-checkbox" />
         Subscribe to our newsletter
       </label>
     </div>
-    <div class="fs-field col-span-full">
+
+    <div class="fs-field">
       <div class="g-recaptcha" data-sitekey="6LdNC5ErAAAAAEyHMQj82JA8_CCMzlQK1In23uql"></div>
       <span class="fs-error" id="captcha-error"></span>
     </div>
+
     <div class="fs-button-group">
       <button class="fs-button" type="submit">Submit</button>
     </div>
   </form>
+
   <script>
-    const form    = document.getElementById('contact-form');
+    const FORM_ID   = 'contact-form';
+    const FORM_NAME = 'Contact';
+
+    const form    = document.getElementById(FORM_ID);
     const msgBox  = document.getElementById('form-message');
     const toast   = msgBox.querySelector('.fs-toast');
+
     const els = {
       firstName: document.getElementById('firstName'),
       lastName : document.getElementById('lastName'),
@@ -124,110 +127,133 @@
       subscribe: document.getElementById('subscribe'),
       captchaErr: document.getElementById('captcha-error')
     };
-    // ---- Height reporting ----------------------------------------------------
+
+    // ---------- Height reporting ----------
     let rhTimer;
-    function reportHeight() {
+    function postHeight(){
       const h = document.documentElement.scrollHeight;
       parent.postMessage({ type: 'FORM_HEIGHT', height: h }, '*');
     }
-    function reportHeightDebounced(delay = 60) {
+    function postHeightDebounced(delay=40){
       clearTimeout(rhTimer);
-      rhTimer = setTimeout(() => {
-        // double RAF to ensure layout is fully settled
-        requestAnimationFrame(() => requestAnimationFrame(reportHeight));
+      rhTimer = setTimeout(()=> {
+        requestAnimationFrame(()=> requestAnimationFrame(postHeight));
       }, delay);
     }
-    // Observe any size change in body (covers toast, errors, textarea growth, etc.)
-    const ro = new ResizeObserver(() => reportHeightDebounced(20));
+    const ro = new ResizeObserver(() => postHeightDebounced(20));
     ro.observe(document.body);
-    // ---- Toast helpers -------------------------------------------------------
-    function showToast(message, isError = false){
+    window.addEventListener('load',  () => postHeightDebounced(0));
+    window.addEventListener('resize',() => postHeightDebounced(0));
+
+    // ---------- Toast helpers ----------
+    function showToast(message, isError=false){
       toast.textContent = message;
       toast.classList.toggle('error', isError);
       msgBox.style.display = 'block';
-      reportHeightDebounced(); // account for the newly visible toast
+      postHeightDebounced();
     }
     function clearToast(){
       msgBox.style.display = 'none';
       toast.textContent = '';
       toast.classList.remove('error');
-      reportHeightDebounced();
+      postHeightDebounced();
     }
-    // ---- Validation ----------------------------------------------------------
+
+    // ---------- Validation ----------
     function setError(inputEl, message){
       const errEl = document.getElementById(inputEl.id + '-error');
-      if (errEl){
-        errEl.textContent = message;
-        errEl.classList.add('show');
-      }
+      if (errEl){ errEl.textContent = message; errEl.classList.add('show'); }
       inputEl.classList.add('fs-invalid');
-      inputEl.setAttribute('aria-invalid', 'true');
-      inputEl.setAttribute('aria-describedby', errEl ? errEl.id : '');
-      reportHeightDebounced(); // error lines add height
+      inputEl.setAttribute('aria-invalid','true');
+      if (errEl) inputEl.setAttribute('aria-describedby', errEl.id);
+      postHeightDebounced();
     }
     function clearError(inputEl){
       const errEl = document.getElementById(inputEl.id + '-error');
-      if (errEl){
-        errEl.textContent = '';
-        errEl.classList.remove('show');
-      }
+      if (errEl){ errEl.textContent = ''; errEl.classList.remove('show'); }
       inputEl.classList.remove('fs-invalid');
       inputEl.removeAttribute('aria-invalid');
       inputEl.removeAttribute('aria-describedby');
-      reportHeightDebounced();
+      postHeightDebounced();
+    }
+    function listMissing(els, token){
+      const missing = [];
+      if (!els.firstName.value.trim()) missing.push('firstName');
+      if (!els.lastName.value.trim())  missing.push('lastName');
+      if (!els.email.value.trim())     missing.push('email');
+      if (!els.message.value.trim())   missing.push('message');
+      if (!token)                      missing.push('captcha');
+      return missing;
     }
     function validate(){
       let valid = true;
-      // Reset all errors
+
       [els.firstName, els.lastName, els.email, els.message].forEach(clearError);
-      els.captchaErr.textContent = '';
-      els.captchaErr.classList.remove('show');
-      if (!els.firstName.value.trim()){
-        setError(els.firstName, 'First name is required.');
-        valid = false;
-      }
-      if (!els.lastName.value.trim()){
-        setError(els.lastName, 'Last name is required.');
-        valid = false;
-      }
+      els.captchaErr.textContent = ''; els.captchaErr.classList.remove('show');
+
+      if (!els.firstName.value.trim()){ setError(els.firstName,'First name is required.'); valid = false; }
+      if (!els.lastName.value.trim()){  setError(els.lastName,'Last name is required.');  valid = false; }
+
       const emailVal = els.email.value.trim();
-      const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal);
-      if (!emailVal){
-        setError(els.email, 'Email is required.');
-        valid = false;
-      } else if (!emailOk){
-        setError(els.email, 'Please enter a valid email address.');
-        valid = false;
-      }
+      const emailOk  = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal);
+      if (!emailVal){ setError(els.email,'Email is required.'); valid = false; }
+      else if (!emailOk){ setError(els.email,'Please enter a valid email address.'); valid = false; }
+
       const msgVal = els.message.value.trim();
-      if (!msgVal){
-        setError(els.message, 'Message is required.');
-        valid = false;
-      } else if (msgVal.length < 5){
-        setError(els.message, 'Please provide a little more detail (at least 5 characters).');
-        valid = false;
-      }
+      if (!msgVal){ setError(els.message,'Message is required.'); valid = false; }
+      else if (msgVal.length < 5){ setError(els.message,'Please add a little more detail (≥ 5 characters).'); valid = false; }
+
       const token = grecaptcha.getResponse();
       if (!token){
         els.captchaErr.textContent = 'Please complete the CAPTCHA.';
         els.captchaErr.classList.add('show');
         valid = false;
-        reportHeightDebounced();
+        postHeightDebounced();
       }
+
       return { valid, token };
     }
-    // Revalidate on input
-    [els.firstName, els.lastName, els.email, els.message].forEach(el=>{
-      el.addEventListener('input', ()=> clearError(el));
+
+    // ---------- Tracking: page/form view ----------
+    dl('form_view', {
+      form_id: FORM_ID,
+      form_name: FORM_NAME,
+      page_path: location.pathname + location.search
     });
+
+    // Field interaction (blur)
+    ['firstName','lastName','email','message'].forEach(id=>{
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('blur', () => {
+        dl('form_field_interaction', {
+          form_id: FORM_ID,
+          field_name: el.name || id,
+          field_type: el.type || el.tagName.toLowerCase(),
+          field_length: (el.value || '').length
+        });
+      });
+    });
+
+    // ---------- Submit ----------
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
       clearToast();
+
+      dl('form_submit_attempt', { form_id: FORM_ID, form_name: FORM_NAME });
+
       const { valid, token } = validate();
       if (!valid){
+        dl('form_validation_failed', {
+          form_id: FORM_ID,
+          missing_fields: listMissing(els, token)
+        });
         showToast('Please fix the errors highlighted below.', true);
         return;
       }
+
+      dl('recaptcha_passed', { form_id: FORM_ID });
+
       const payload = {
         firstName: els.firstName.value.trim(),
         lastName : els.lastName.value.trim(),
@@ -236,41 +262,49 @@
         subscribe: els.subscribe.checked,
         token
       };
+
       try{
         const res  = await fetch('https://ifvdoqjmveakhgpojufu.functions.supabase.co/contactForm', {
-          method: 'POST',
-          headers:{ 'Content-Type':'application/json' },
-          body: JSON.stringify(payload)
+          method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
         });
         const json = await res.json();
+
         if (json.success){
-          // Push form submission data to the dataLayer
-          window.dataLayer = window.dataLayer || [];
-          window.dataLayer.push({
-            event: 'formSubmission',
-            formId: form.id,
-            formName: 'Contact Form',
-            firstName: els.firstName.value.trim(),
-            lastName: els.lastName.value.trim(),
-            email: els.email.value.trim(),
-            messageLength: els.message.value.trim().length,
-            subscribe: els.subscribe.checked,
-            recaptchaCompleted: true,
-            submissionTime: new Date().toISOString()
+          // GA4 – no PII
+          dl('generate_lead', {
+            form_id: FORM_ID,
+            form_name: FORM_NAME,
+            subscribe: !!payload.subscribe,
+            message_len: payload.message.length
           });
+          // Google Ads – enhanced conversions (GTM will hash)
+          dl('ads_ec_lead', {
+            form_id: FORM_ID,
+            enhanced_conversions: {
+              email: payload.email,
+              first_name: payload.firstName,
+              last_name: payload.lastName
+            }
+          });
+
           showToast("Thanks for reaching out! We'll be in touch soon.");
-          form.reset();
-          grecaptcha.reset();
+          form.reset(); grecaptcha.reset();
         } else {
           throw new Error(json.error || 'Something went wrong');
         }
       } catch(err){
-        showToast('Oops: ' + err.message, true);
+        dl('form_submit_error', {
+          form_id: FORM_ID,
+          error_message: String(err && err.message || 'unknown').slice(0,200)
+        });
+        showToast('Oops: ' + (err?.message || 'Unknown error'), true);
       }
     });
-    // Initial & window events
-    window.addEventListener('load',  () => reportHeightDebounced(0));
-    window.addEventListener('resize', () => reportHeightDebounced(0));
+
+    // Revalidate clears errors height
+    [els.firstName, els.lastName, els.email, els.message].forEach(el=>{
+      el.addEventListener('input', ()=> clearError(el));
+    });
   </script>
 </body>
 </html>

@@ -76,10 +76,18 @@
 
     .fs-toast{background:#e0f2fe;color:#0369a1;padding:1rem;border-radius:.375rem;text-align:center;font-weight:500;width:100%}
     .fs-toast.error{background:var(--danger-bg); color:var(--danger)}
+
+    /* Added for consistent placeholder sizing */
+    .fs-input::placeholder,
+    .fs-textarea::placeholder {
+      font-size: 1rem;
+      color: #64748b;
+      opacity: 1;
+      font-family: var(--font-body);
+    }
   </style>
 </head>
 <body>
-
   <!-- Contact Form -->
   <form id="contact-form" class="fs-form" novalidate>
     <div id="form-message" class="fs-field col-span-full" style="display:none;">
@@ -297,160 +305,5 @@
     window.addEventListener('load',  () => reportHeightDebounced(0));
     window.addEventListener('resize', () => reportHeightDebounced(0));
   </script>
-  
-  <!--<script>
-    const form    = document.getElementById('contact-form');
-    const msgBox  = document.getElementById('form-message');
-    const toast   = msgBox.querySelector('.fs-toast');
-
-    const els = {
-      firstName: document.getElementById('firstName'),
-      lastName : document.getElementById('lastName'),
-      email    : document.getElementById('email'),
-      message  : document.getElementById('message'),
-      subscribe: document.getElementById('subscribe'),
-      captchaErr: document.getElementById('captcha-error')
-    };
-
-    function showToast(message, isError = false){
-      toast.textContent = message;
-      toast.classList.toggle('error', isError);
-      msgBox.style.display = 'block';
-    }
-
-    function clearToast(){
-      msgBox.style.display = 'none';
-      toast.textContent = '';
-      toast.classList.remove('error');
-    }
-
-    function setError(inputEl, message){
-      const errEl = document.getElementById(inputEl.id + '-error');
-      if (errEl){
-        errEl.textContent = message;
-        errEl.classList.add('show');
-      }
-      inputEl.classList.add('fs-invalid');
-      inputEl.setAttribute('aria-invalid', 'true');
-      inputEl.setAttribute('aria-describedby', errEl ? errEl.id : '');
-    }
-
-    function clearError(inputEl){
-      const errEl = document.getElementById(inputEl.id + '-error');
-      if (errEl){
-        errEl.textContent = '';
-        errEl.classList.remove('show');
-      }
-      inputEl.classList.remove('fs-invalid');
-      inputEl.removeAttribute('aria-invalid');
-      inputEl.removeAttribute('aria-describedby');
-    }
-
-    function validate(){
-      let valid = true;
-
-      // Reset all errors
-      [els.firstName, els.lastName, els.email, els.message].forEach(clearError);
-      els.captchaErr.textContent = '';
-      els.captchaErr.classList.remove('show');
-
-      // First name
-      if (!els.firstName.value.trim()){
-        setError(els.firstName, 'First name is required.');
-        valid = false;
-      }
-
-      // Last name
-      if (!els.lastName.value.trim()){
-        setError(els.lastName, 'Last name is required.');
-        valid = false;
-      }
-
-      // Email
-      const emailVal = els.email.value.trim();
-      const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal);
-      if (!emailVal){
-        setError(els.email, 'Email is required.');
-        valid = false;
-      } else if (!emailOk){
-        setError(els.email, 'Please enter a valid email address.');
-        valid = false;
-      }
-
-      // Message
-      const msgVal = els.message.value.trim();
-      if (!msgVal){
-        setError(els.message, 'Message is required.');
-        valid = false;
-      } else if (msgVal.length < 5){
-        setError(els.message, 'Please provide a little more detail (at least 5 characters).');
-        valid = false;
-      }
-
-      // CAPTCHA
-      const token = grecaptcha.getResponse();
-      if (!token){
-        els.captchaErr.textContent = 'Please complete the CAPTCHA.';
-        els.captchaErr.classList.add('show');
-        valid = false;
-      }
-
-      return { valid, token };
-    }
-
-    // Revalidate on input
-    [els.firstName, els.lastName, els.email, els.message].forEach(el=>{
-      el.addEventListener('input', ()=> clearError(el));
-    });
-
-    form.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      clearToast();
-
-      const { valid, token } = validate();
-      if (!valid){
-        showToast('Please fix the errors highlighted below.', true);
-        return;
-      }
-
-      const payload = {
-        firstName: els.firstName.value.trim(),
-        lastName : els.lastName.value.trim(),
-        email    : els.email.value.trim(),
-        message  : els.message.value.trim(),
-        subscribe: els.subscribe.checked,
-        token
-      };
-
-      try{
-        const res  = await fetch('https://ifvdoqjmveakhgpojufu.functions.supabase.co/contactForm', {
-          method: 'POST',
-          headers:{ 'Content-Type':'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        const json = await res.json();
-
-        if (json.success){
-            showToast("Thanks for reaching out! We'll be in touch soon.");
-            form.reset();
-            grecaptcha.reset();
-        } else {
-            // Surface backend error including incorrect-captcha-sol, etc.
-            throw new Error(json.error || 'Something went wrong');
-        }
-      } catch(err){
-        showToast('Oops: ' + err.message, true);
-      }
-    });
-
-    // Height reporter for embedding
-    function reportHeight(){
-      const h = document.documentElement.scrollHeight;
-      parent.postMessage({ type:'FORM_HEIGHT', height:h }, '*');
-    }
-    window.addEventListener('load', reportHeight);
-    window.addEventListener('resize', reportHeight);
-  </script> !-->
 </body>
 </html>

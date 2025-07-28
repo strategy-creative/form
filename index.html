@@ -301,6 +301,27 @@
       }
     });
   
+if (json.success){
+  // Push form submission data to the dataLayer
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: 'formSubmission',
+    formId: form.id,
+    formName: 'Contact Form',
+    firstName: els.firstName.value.trim(),
+    lastName: els.lastName.value.trim(),
+    email: els.email.value.trim(),
+    messageLength: els.message.value.trim().length,
+    subscribe: els.subscribe.checked,
+    recaptchaCompleted: true,
+    submissionTime: new Date().toISOString()
+  });
+
+  showToast("Thanks for reaching out! We'll be in touch soon.");
+  form.reset();
+  grecaptcha.reset();
+}
+
     // Initial & window events
     window.addEventListener('load',  () => reportHeightDebounced(0));
     window.addEventListener('resize', () => reportHeightDebounced(0));

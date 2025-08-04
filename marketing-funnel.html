@@ -1,0 +1,2064 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editable Marketing Funnel</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 0 0% 9%;
+            --card: 0 0% 100%;
+            --card-foreground: 0 0% 9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 0 0% 9%;
+            --primary: 0 0% 9%;
+            --primary-foreground: 0 0% 98%;
+            --secondary: 0 0% 96%;
+            --secondary-foreground: 0 0% 9%;
+            --muted: 0 0% 96%;
+            --muted-foreground: 0 0% 45%;
+            --accent: 0 0% 96%;
+            --accent-foreground: 0 0% 9%;
+            --destructive: 0 0% 45%;
+            --destructive-foreground: 0 0% 98%;
+            --border: 0 0% 90%;
+            --input: 0 0% 90%;
+            --ring: 0 0% 9%;
+            --radius: 0.5rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: hsl(var(--background));
+            color: hsl(var(--foreground));
+            min-height: 100vh;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+        }
+
+        .header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: hsl(var(--foreground));
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
+        }
+
+        .header p {
+            color: hsl(var(--muted-foreground));
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .funnel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .stage {
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+
+        .stage:hover {
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        .stage-header {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 600;
+            font-size: 1.125rem;
+            color: white;
+            position: relative;
+        }
+
+        .awareness {
+            background: hsl(0 0% 15%);
+        }
+
+        .consideration {
+            background: hsl(0 0% 25%);
+        }
+
+        .conversion {
+            background: hsl(0 0% 35%);
+        }
+
+        .retention {
+            background: hsl(0 0% 45%);
+        }
+
+        .stage-content {
+            padding: 2rem;
+            background: hsl(var(--card));
+        }
+
+        .section {
+            margin-bottom: 2rem;
+        }
+
+        .section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section h3 {
+            color: hsl(var(--foreground));
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+
+        .editable {
+            background: hsl(var(--background));
+            border: 1px solid hsl(var(--border));
+            border-radius: calc(var(--radius) - 2px);
+            padding: 0.75rem;
+            min-height: 2.5rem;
+            transition: all 0.2s ease-in-out;
+            cursor: text;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .editable:hover {
+            border-color: hsl(var(--ring));
+        }
+
+        .editable:focus {
+            outline: none;
+            border-color: hsl(var(--ring));
+            box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+        }
+
+        .editable[contenteditable="true"]:empty:before {
+            content: attr(data-placeholder);
+            color: hsl(var(--muted-foreground));
+            font-style: normal;
+        }
+
+        .channels-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .channel-card {
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 1rem;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .channel-card:hover {
+            box-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.1);
+        }
+
+        .channel-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .channel-name {
+            background: transparent;
+            border: 1px solid hsl(var(--border));
+            border-radius: calc(var(--radius) - 2px);
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            flex: 1;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .channel-name:hover {
+            border-color: hsl(var(--ring));
+        }
+
+        .channel-name:focus {
+            outline: none;
+            border-color: hsl(var(--ring));
+            box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+        }
+
+        .channel-name[contenteditable="true"]:empty:before {
+            content: attr(data-placeholder);
+            color: hsl(var(--muted-foreground));
+            font-style: normal;
+        }
+
+        .remove-channel {
+            background: transparent;
+            border: 1px solid hsl(var(--border));
+            border-radius: calc(var(--radius) - 2px);
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            color: hsl(var(--muted-foreground));
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .remove-channel:hover {
+            background: hsl(var(--destructive));
+            color: hsl(var(--destructive-foreground));
+            border-color: hsl(var(--destructive));
+        }
+
+        .channel-notes {
+            background: hsl(var(--muted));
+            border: 1px solid hsl(var(--border));
+            border-radius: calc(var(--radius) - 2px);
+            padding: 0.75rem;
+            min-height: 4rem;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .channel-notes:hover {
+            border-color: hsl(var(--ring));
+        }
+
+        .channel-notes:focus {
+            outline: none;
+            border-color: hsl(var(--ring));
+            box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+            background: hsl(var(--background));
+        }
+
+        .channel-notes[contenteditable="true"]:empty:before {
+            content: attr(data-placeholder);
+            color: hsl(var(--muted-foreground));
+            font-style: normal;
+        }
+
+        .add-channel {
+            background: transparent;
+            border: 1px dashed hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            color: hsl(var(--muted-foreground));
+            font-size: 0.875rem;
+        }
+
+        .add-channel:hover {
+            border-color: hsl(var(--ring));
+            background: hsl(var(--accent));
+            color: hsl(var(--foreground));
+        }
+
+        .action-buttons {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 50;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            border-radius: calc(var(--radius) - 2px);
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            border: none;
+            padding: 0.5rem 1rem;
+            min-width: 140px;
+            height: 2.5rem;
+            background: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+
+        .btn:hover {
+            background: hsl(var(--primary) / 0.9);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        .btn-toggle {
+            background: hsl(var(--secondary));
+            color: hsl(var(--secondary-foreground));
+            border: 1px solid hsl(var(--border));
+        }
+
+        .btn-toggle:hover {
+            background: hsl(var(--secondary) / 0.8);
+        }
+
+        .btn-download {
+            background: hsl(var(--destructive));
+            color: hsl(var(--destructive-foreground));
+        }
+
+        .btn-download:hover {
+            background: hsl(var(--destructive) / 0.9);
+        }
+
+        .download-menu {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            background: hsl(var(--popover));
+            border: 1px solid hsl(var(--border));
+            border-radius: calc(var(--radius) - 2px);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+            min-width: 140px;
+        }
+
+        .download-menu.show {
+            display: block;
+        }
+
+        .download-option {
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            transition: background 0.2s ease-in-out;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+            color: hsl(var(--popover-foreground));
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .download-option:hover {
+            background: hsl(var(--accent));
+        }
+
+        .funnel-shape {
+            width: 100%;
+            height: 1px;
+            background: hsl(var(--border));
+            margin: 1rem 0;
+            position: relative;
+        }
+
+        .funnel-shape::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            background: hsl(var(--muted-foreground));
+            border-radius: 50%;
+        }
+
+        /* Funnel View Styles */
+        .funnel-view {
+            display: none;
+            padding: 2rem;
+            min-height: 100vh;
+            background: hsl(var(--background));
+        }
+
+        .funnel-view.active {
+            display: block;
+        }
+
+        .funnel-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: hsl(var(--foreground));
+            border: 1px solid hsl(var(--border));
+        }
+
+        .btn-outline:hover {
+            background: hsl(var(--accent));
+        }
+
+        .funnel-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .funnel-stage {
+            position: relative;
+            margin: 1.5rem auto;
+            text-align: center;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .funnel-stage:hover {
+            transform: translateY(-2px);
+        }
+
+        .funnel-polygon {
+            position: relative;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.125rem;
+            cursor: pointer;
+            border-radius: var(--radius);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .funnel-polygon:hover {
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        .stage-awareness {
+            width: min(800px, 90vw);
+            height: 100px;
+            background: hsl(0 0% 15%);
+            clip-path: polygon(0 0, 100% 0, 92% 100%, 8% 100%);
+        }
+
+        .stage-consideration {
+            width: min(650px, 80vw);
+            height: 100px;
+            background: hsl(0 0% 25%);
+            clip-path: polygon(0 0, 100% 0, 88% 100%, 12% 100%);
+        }
+
+        .stage-conversion {
+            width: min(500px, 70vw);
+            height: 100px;
+            background: hsl(0 0% 35%);
+            clip-path: polygon(0 0, 100% 0, 85% 100%, 15% 100%);
+        }
+
+        .stage-retention {
+            width: min(350px, 60vw);
+            height: 100px;
+            background: hsl(0 0% 45%);
+            clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);
+        }
+
+        .funnel-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+        }
+
+        .funnel-title {
+            font-size: 1.25rem;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-weight: 600;
+        }
+
+        .funnel-channels {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            line-height: 1.4;
+            font-weight: 400;
+        }
+
+        .funnel-details {
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin: 1rem auto;
+            max-width: 700px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            color: hsl(var(--card-foreground));
+            display: none;
+        }
+
+        .funnel-details.show {
+            display: block;
+            animation: slideDown 0.2s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .detail-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-section h4 {
+            color: hsl(var(--foreground));
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .detail-channels {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .detail-channel {
+            background: hsl(var(--secondary));
+            color: hsl(var(--secondary-foreground));
+            padding: 0.25rem 0.75rem;
+            border-radius: calc(var(--radius) - 2px);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .detail-notes {
+            background: hsl(var(--muted));
+            color: hsl(var(--muted-foreground));
+            padding: 1rem;
+            border-radius: calc(var(--radius) - 2px);
+            border-left: 3px solid hsl(var(--primary));
+            line-height: 1.6;
+            font-size: 0.875rem;
+        }
+
+        .view-toggle {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .toggle-switch {
+            display: inline-flex;
+            background: hsl(var(--muted));
+            border-radius: calc(var(--radius) - 2px);
+            padding: 0.25rem;
+            border: 1px solid hsl(var(--border));
+        }
+
+        .toggle-option {
+            padding: 0.5rem 1rem;
+            border-radius: calc(var(--radius) - 4px);
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            color: hsl(var(--muted-foreground));
+            font-weight: 500;
+            font-size: 0.875rem;
+            background: transparent;
+            border: none;
+        }
+
+        .toggle-option.active {
+            background: hsl(var(--background));
+            color: hsl(var(--foreground));
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+
+        /* Template Selection */
+        .template-selector {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .template-option {
+            padding: 0.5rem 1rem;
+            border: 1px solid hsl(var(--border));
+            border-radius: calc(var(--radius) - 2px);
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            color: hsl(var(--muted-foreground));
+            font-size: 0.875rem;
+            background: transparent;
+        }
+
+        .template-option.active {
+            background: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            border-color: hsl(var(--primary));
+        }
+
+        .template-option:hover {
+            border-color: hsl(var(--ring));
+        }
+
+        /* Template Styles */
+
+        /* Classic Funnel - Traditional narrowing funnel */
+        .template-classic .funnel-stage {
+            margin: 1.5rem auto;
+        }
+
+        .template-classic .funnel-polygon {
+            clip-path: polygon(0 0, 100% 0, 92% 100%, 8% 100%);
+            border-radius: 0;
+        }
+
+        /* Horizontal Flow - Side-by-side stages */
+        .template-horizontal .funnel-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+
+        .template-horizontal .funnel-stage {
+            flex: 1;
+            min-width: 250px;
+            max-width: 300px;
+            margin: 0;
+        }
+
+        .template-horizontal .funnel-polygon {
+            width: 100% !important;
+            height: 120px;
+            clip-path: none;
+            border-radius: var(--radius);
+            position: relative;
+        }
+
+        .template-horizontal .funnel-stage:not(:last-child) .funnel-polygon::after {
+            content: '→';
+            position: absolute;
+            right: -1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            color: hsl(var(--muted-foreground));
+        }
+
+        /* Circular Flow - Circular arrangement */
+        .template-circular .funnel-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            min-height: 600px;
+        }
+
+        .template-circular .funnel-stage {
+            position: absolute;
+            margin: 0;
+        }
+
+        .template-circular .funnel-polygon {
+            width: 200px !important;
+            height: 200px;
+            border-radius: 50%;
+            clip-path: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .template-circular .funnel-stage:nth-child(1) {
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .template-circular .funnel-stage:nth-child(2) {
+            top: 150px;
+            right: 0;
+        }
+
+        .template-circular .funnel-stage:nth-child(3) {
+            bottom: 150px;
+            right: 0;
+        }
+
+        .template-circular .funnel-stage:nth-child(4) {
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .template-circular .funnel-stage:nth-child(5) {
+            bottom: 150px;
+            left: 0;
+        }
+
+        .template-circular .funnel-stage:nth-child(6) {
+            top: 150px;
+            left: 0;
+        }
+
+        /* Pyramid - Stacked pyramid layout */
+        .template-pyramid .funnel-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .template-pyramid .funnel-stage {
+            margin: 0;
+        }
+
+        .template-pyramid .funnel-polygon {
+            clip-path: polygon(0 0, 100% 0, 85% 100%, 15% 100%);
+            border-radius: 0;
+            position: relative;
+        }
+
+        .template-pyramid .funnel-stage::before {
+            content: '';
+            position: absolute;
+            top: -0.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 10px solid hsl(var(--border));
+            z-index: 1;
+        }
+
+        .template-pyramid .funnel-stage:first-child::before {
+            display: none;
+        }
+
+        /* Steps - Step-by-step layout */
+        .template-steps .funnel-container {
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .template-steps .funnel-stage {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin: 0;
+        }
+
+        .template-steps .funnel-stage:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .template-steps .funnel-polygon {
+            width: 100px !important;
+            height: 100px;
+            border-radius: 50%;
+            clip-path: none;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .template-steps .funnel-details {
+            position: static;
+            display: block !important;
+            margin: 0;
+            max-width: none;
+            flex: 1;
+        }
+
+        .template-steps .funnel-stage::before {
+            content: counter(step-counter);
+            counter-increment: step-counter;
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            width: 30px;
+            height: 30px;
+            background: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+            z-index: 2;
+        }
+
+        .template-steps .funnel-container {
+            counter-reset: step-counter;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .template-horizontal .funnel-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .template-horizontal .funnel-stage:not(:last-child) .funnel-polygon::after {
+                content: '↓';
+                right: auto;
+                bottom: -1.5rem;
+                top: auto;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .template-circular .funnel-container {
+                min-height: 400px;
+            }
+
+            .template-circular .funnel-polygon {
+                width: 150px !important;
+                height: 150px;
+            }
+
+            .template-circular .funnel-stage:nth-child(1) {
+                top: 0;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .template-circular .funnel-stage:nth-child(2) {
+                top: 100px;
+                right: 10px;
+            }
+
+            .template-circular .funnel-stage:nth-child(3) {
+                bottom: 100px;
+                right: 10px;
+            }
+
+            .template-circular .funnel-stage:nth-child(4) {
+                bottom: 0;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .template-circular .funnel-stage:nth-child(5) {
+                bottom: 100px;
+                left: 10px;
+            }
+
+            .template-circular .funnel-stage:nth-child(6) {
+                top: 100px;
+                left: 10px;
+            }
+
+            .template-steps .funnel-stage {
+                flex-direction: column !important;
+                text-align: center;
+                gap: 1rem;
+            }
+        }
+
+        /* Stage Management */
+        .stage-management {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stage-title {
+            background: transparent;
+            border: none;
+            color: inherit;
+            font-size: inherit;
+            font-weight: inherit;
+            padding: 0;
+            margin: 0;
+            cursor: text;
+            min-width: 120px;
+        }
+
+        .stage-title:focus {
+            outline: 1px solid hsl(var(--ring));
+            outline-offset: 2px;
+            border-radius: 2px;
+        }
+
+        .stage-subtitle {
+            background: transparent;
+            border: none;
+            color: inherit;
+            font-size: inherit;
+            opacity: inherit;
+            padding: 0;
+            margin: 0;
+            cursor: text;
+            min-width: 80px;
+        }
+
+        .stage-subtitle:focus {
+            outline: 1px solid hsl(var(--ring));
+            outline-offset: 2px;
+            border-radius: 2px;
+        }
+
+        .remove-stage {
+            background: transparent;
+            border: 1px solid hsl(var(--border));
+            border-radius: calc(var(--radius) - 2px);
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            color: hsl(var(--muted-foreground));
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            margin-left: auto;
+        }
+
+        .remove-stage:hover {
+            background: hsl(var(--destructive));
+            color: hsl(var(--destructive-foreground));
+            border-color: hsl(var(--destructive));
+        }
+
+        .add-stage-btn {
+            background: transparent;
+            border: 1px dashed hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            color: hsl(var(--muted-foreground));
+            font-size: 0.875rem;
+            margin: 1rem 0;
+        }
+
+        .add-stage-btn:hover {
+            border-color: hsl(var(--ring));
+            background: hsl(var(--accent));
+            color: hsl(var(--foreground));
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 <input type="text" class="stage-title" value="Marketing Funnel"
+                    style="font-size: 2.25rem; font-weight: 700; text-align: center; width: auto;"
+                    onchange="updateTitle(this.value)"></h1>
+            <p>Click on any section to edit directly</p>
+            <div class="stage-management">
+                <button class="btn btn-outline" onclick="addNewStage()">+ Add Stage</button>
+                <button class="btn btn-outline" onclick="resetToDefault()">🔄 Reset to Default</button>
+            </div>
+            <div class="view-toggle">
+                <div class="toggle-switch">
+                    <div class="toggle-option active" onclick="switchView('edit')">📝 Edit View</div>
+                    <div class="toggle-option" onclick="switchView('funnel')">🎯 Funnel View</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="funnel">
+            <!-- AWARENESS STAGE -->
+            <div class="stage" data-stage-id="awareness">
+                <div class="stage-header awareness">
+                    <span style="font-size: 1.25rem;">🎯</span>
+                    <input type="text" class="stage-title" value="AWARENESS"
+                        onchange="updateStageTitle('awareness', this.value)">
+                    <input type="text" class="stage-subtitle" value="Top of Funnel"
+                        style="font-size: 0.75rem; margin-left: auto; opacity: 0.8;"
+                        onchange="updateStageSubtitle('awareness', this.value)">
+                    <button class="remove-stage" onclick="removeStage('awareness')">✕</button>
+                </div>
+                <div class="stage-content">
+                    <div class="section">
+                        <h3>Media Channels Media Channels & Strategies Notes</h3>
+                        <div class="channels-container" data-stage="awareness">
+                            <div class="channel-card">
+                                <div class="channel-header">
+                                    <div class="channel-name editable" contenteditable="true"
+                                        data-placeholder="Channel name (e.g., Social Media)"></div>
+                                    <button class="remove-channel" onclick="removeChannel(this)">✕</button>
+                                </div>
+                                <div class="channel-notes editable" contenteditable="true"
+                                    data-placeholder="Add notes for this channel..."></div>
+                            </div>
+                            <div class="channel-card">
+                                <div class="channel-header">
+                                    <div class="channel-name editable" contenteditable="true"
+                                        data-placeholder="Channel name (e.g., Content Marketing)"></div>
+                                    <button class="remove-channel" onclick="removeChannel(this)">✕</button>
+                                </div>
+                                <div class="channel-notes editable" contenteditable="true"
+                                    data-placeholder="Add notes for this channel..."></div>
+                            </div>
+                            <div class="channel-card">
+                                <div class="channel-header">
+                                    <div class="channel-name editable" contenteditable="true"
+                                        data-placeholder="Channel name (e.g., SEO)"></div>
+                                    <button class="remove-channel" onclick="removeChannel(this)">✕</button>
+                                </div>
+                                <div class="channel-notes editable" contenteditable="true"
+                                    data-placeholder="Add notes for this channel..."></div>
+                            </div>
+                            <div class="add-channel" onclick="addChannel('awareness')">
+                                + Add New Channel
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="funnel-shape"></div>
+
+            <!-- CONSIDERATION STAGE -->
+            <div class="stage" data-stage-id="consideration">
+                <div class="stage-header consideration">
+                    <span style="font-size: 1.25rem;">🤔</span>
+                    <input type="text" class="stage-title" value="CONSIDERATION"
+                        onchange="updateStageTitle('consideration', this.value)">
+                    <input type="text" class="stage-subtitle" value="Middle of Funnel"
+                        style="font-size: 0.75rem; margin-left: auto; opacity: 0.8;"
+                        onchange="updateStageSubtitle('consideration', this.value)">
+                    <button class="remove-stage" onclick="removeStage('consideration')">✕</button>
+                </div>
+                <div class="stage-content">
+                    <div class="section">
+                        <h3>Media Channels Media Channels & Strategies Notes</h3>
+                        <div class="channels-container" data-stage="consideration">
+                            <div class="channel-card">
+                                <div class="channel-header">
+                                    <div class="channel-name editable" contenteditable="true"
+                                        data-placeholder="Channel name (e.g., Email Marketing)"></div>
+                                    <button class="remove-channel" onclick="removeChannel(this)">✕</button>
+                                </div>
+                                <div class="channel-notes editable" contenteditable="true"
+                                    data-placeholder="Add notes for this channel..."></div>
+                            </div>
+                            <div class="channel-card">
+                                <div class="channel-header">
+                                    <div class="channel-name editable" contenteditable="true"
+                                        data-placeholder="Channel name (e.g., Webinars)"></div>
+                                    <button class="remove-channel" onclick="removeChannel(this)">✕</button>
+                                </div>
+                                <div class="channel-notes editable" contenteditable="true"
+                                    data-placeholder="Add notes for this channel..."></div>
+                            </div>
+                            <div class="channel-card">
+                                <div class="channel-header">
+                                    <div class="channel-name editable" contenteditable="true"
+                                        data-placeholder="Channel name (e.g., Retargeting Ads)"></div>
+                                    <button class="remove-channel" onclick="removeChannel(this)">✕</button>
+                                </div>
+                                <div class="channel-notes editable" contenteditable="true"
+                                    data-placeholder="Add notes for this channel..."></div>
+                            </div>
+                            <div class="add-channel" onclick="addChannel('consideration')">
+                                + Add New Channel
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="funnel-shape"></div>
+
+            <!-- CONVERSION STAGE -->
+            <div class="stage" data-stage-id="conversion">
+                <div class="stage-header conversion">
+                    <span style="font-size: 1.25rem;">💰</span>
+                    <input type="text" class="stage-title" value="CONVERSION"
+                        onchange="updateStageTitle('conversion', this.value)">
+                    <input type="text" class="stage-subtitle" value="Bottom of Funnel"
+                        style="font-size: 0.75rem; margin-left: auto; opacity: 0.8;"
+                        onchange="updateStageSubtitle('conversion', this.value)">
+                    <button class="remove-stage" onclick="removeStage('conversion')">✕</button>
+                </div>
+                <div class="stage-content">
+                    <div class="section">
+                        <h3>Media Channels Media Channels & Strategies Notes</h3>
+                        <div class="channels-container" data-stage="conversion">
+                            <div class="channel-card">
+                                <div class="channel-header">
+                                    <div class="channel-name editable" contenteditable="true"
+                                        data-placeholder="Channel name (e.g., Landing Pages)"></div>
+                                    <button class="remove-channel" onclick="removeChannel(this)">✕</button>
+                                </div>
+                                <div class="channel-notes editable" contenteditable="true"
+                                    data-placeholder="Add notes for this channel..."></div>
+                            </div>
+                            <div class="channel-card">
+                                <div class="channel-header">
+                                    <div class="channel-name editable" contenteditable="true"
+                                        data-placeholder="Channel name (e.g., Sales Calls)"></div>
+                                    <button class="remove-channel" onclick="removeChannel(this)">✕</button>
+                                </div>
+                                <div class="channel-notes editable" contenteditable="true"
+                                    data-placeholder="Add notes for this channel..."></div>
+                            </div>
+                            <div class="channel-card">
+                                <div class="channel-header">
+                                    <div class="channel-name editable" contenteditable="true"
+                                        data-placeholder="Channel name (e.g., Checkout Optimization)"></div>
+                                    <button class="remove-channel" onclick="removeChannel(this)">✕</button>
+                                </div>
+                                <div class="channel-notes editable" contenteditable="true"
+                                    data-placeholder="Add notes for this channel..."></div>
+                            </div>
+                            <div class="add-channel" onclick="addChannel('conversion')">
+                                + Add New Channel
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="funnel-shape"></div>
+
+            <!-- RETENTION STAGE -->
+            <div class="stage" data-stage-id="retention">
+                <div class="stage-header retention">
+                    <span style="font-size: 1.25rem;">🔄</span>
+                    <input type="text" class="stage-title" value="RETENTION"
+                        onchange="updateStageTitle('retention', this.value)">
+                    <input type="text" class="stage-subtitle" value="Post-Purchase"
+                        style="font-size: 0.75rem; margin-left: auto; opacity: 0.8;"
+                        onchange="updateStageSubtitle('retention', this.value)">
+                    <button class="remove-stage" onclick="removeStage('retention')">✕</button>
+                </div>
+                <div class="stage-content">
+                    <div class="section">
+                        <h3>Media Channels Media Channels & Strategies Notes</h3>
+                        <div class="channels-container" data-stage="retention">
+                            <div class="channel-card">
+                                <div class="channel-header">
+                                    <div class="channel-name editable" contenteditable="true"
+                                        data-placeholder="Channel name (e.g., Customer Support)"></div>
+                                    <button class="remove-channel" onclick="removeChannel(this)">✕</button>
+                                </div>
+                                <div class="channel-notes editable" contenteditable="true"
+                                    data-placeholder="Add notes for this channel..."></div>
+                            </div>
+                            <div class="channel-card">
+                                <div class="channel-header">
+                                    <div class="channel-name editable" contenteditable="true"
+                                        data-placeholder="Channel name (e.g., Loyalty Program)"></div>
+                                    <button class="remove-channel" onclick="removeChannel(this)">✕</button>
+                                </div>
+                                <div class="channel-notes editable" contenteditable="true"
+                                    data-placeholder="Add notes for this channel..."></div>
+                            </div>
+                            <div class="channel-card">
+                                <div class="channel-header">
+                                    <div class="channel-name editable" contenteditable="true"
+                                        data-placeholder="Channel name (e.g., Follow-up Campaigns)"></div>
+                                    <button class="remove-channel" onclick="removeChannel(this)">✕</button>
+                                </div>
+                                <div class="channel-notes editable" contenteditable="true"
+                                    data-placeholder="Add notes for this channel..."></div>
+                            </div>
+                            <div class="add-channel" onclick="addChannel('retention')">
+                                + Add New Channel
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="add-stage-btn" onclick="addNewStage()">
+                + Add New Stage
+            </div>
+        </div>
+
+        <!-- Funnel View -->
+        <div class="funnel-view" id="funnelView">
+            <div class="template-selector">
+                <button class="template-option active" onclick="selectTemplate('classic')" data-template="classic">🔻
+                    Classic Funnel</button>
+                <button class="template-option" onclick="selectTemplate('horizontal')" data-template="horizontal">➡️
+                    Horizontal Flow</button>
+                <button class="template-option" onclick="selectTemplate('circular')" data-template="circular">🔄
+                    Circular Flow</button>
+                <button class="template-option" onclick="selectTemplate('pyramid')" data-template="pyramid">🔺
+                    Pyramid</button>
+                <button class="template-option" onclick="selectTemplate('steps')" data-template="steps">📋
+                    Step-by-Step</button>
+            </div>
+            <div class="funnel-controls">
+                <button class="btn btn-outline" onclick="expandAll()">📖 Expand All</button>
+                <button class="btn btn-outline" onclick="collapseAll()">📕 Collapse All</button>
+            </div>
+            <div class="funnel-container"></div>
+            <!-- Awareness Stage -->
+            <div class="funnel-stage">
+                <div class="funnel-polygon stage-awareness" onclick="toggleDetails('awareness-details')">
+                    <div class="funnel-content">
+                        <div class="funnel-title">
+                            <span>🎯</span>
+                            <span>AWARENESS</span>
+                        </div>
+                        <div class="funnel-channels" id="awareness-channels-display">Click to view channels</div>
+                    </div>
+                </div>
+                <div class="funnel-details" id="awareness-details">
+                    <div class="detail-section">
+                        <h4>Media Channels</h4>
+                        <div class="detail-channels" id="awareness-channels-detail"></div>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Notes</h4>
+                        <div class="detail-notes" id="awareness-notes-detail">No notes defined yet</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Consideration Stage -->
+            <div class="funnel-stage">
+                <div class="funnel-polygon stage-consideration" onclick="toggleDetails('consideration-details')">
+                    <div class="funnel-content">
+                        <div class="funnel-title">
+                            <span>🤔</span>
+                            <span>CONSIDERATION</span>
+                        </div>
+                        <div class="funnel-channels" id="consideration-channels-display">Click to view channels
+                        </div>
+                    </div>
+                </div>
+                <div class="funnel-details" id="consideration-details">
+                    <div class="detail-section">
+                        <h4>Media Channels</h4>
+                        <div class="detail-channels" id="consideration-channels-detail"></div>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Notes</h4>
+                        <div class="detail-notes" id="consideration-notes-detail">No notes defined yet
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conversion Stage -->
+            <div class="funnel-stage">
+                <div class="funnel-polygon stage-conversion" onclick="toggleDetails('conversion-details')">
+                    <div class="funnel-content">
+                        <div class="funnel-title">
+                            <span>💰</span>
+                            <span>CONVERSION</span>
+                        </div>
+                        <div class="funnel-channels" id="conversion-channels-display">Click to view channels</div>
+                    </div>
+                </div>
+                <div class="funnel-details" id="conversion-details">
+                    <div class="detail-section">
+                        <h4>Media Channels</h4>
+                        <div class="detail-channels" id="conversion-channels-detail"></div>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Notes</h4>
+                        <div class="detail-notes" id="conversion-notes-detail">No notes defined yet</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Retention Stage -->
+            <div class="funnel-stage">
+                <div class="funnel-polygon stage-retention" onclick="toggleDetails('retention-details')">
+                    <div class="funnel-content">
+                        <div class="funnel-title">
+                            <span>🔄</span>
+                            <span>RETENTION</span>
+                        </div>
+                        <div class="funnel-channels" id="retention-channels-display">Click to view channels</div>
+                    </div>
+                </div>
+                <div class="funnel-details" id="retention-details">
+                    <div class="detail-section">
+                        <h4>Media Channels</h4>
+                        <div class="detail-channels" id="retention-channels-detail"></div>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Notes</h4>
+                        <div class="detail-notes" id="retention-notes-detail">No notes defined yet</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="action-buttons">
+        <button class="btn btn-toggle" onclick="switchView()">🔄 Toggle View</button>
+        <div style="position: relative;">
+            <button class="btn btn-download" onclick="toggleDownloadMenu()">📥 Download</button>
+            <div class="download-menu" id="downloadMenu">
+                <button class="download-option" onclick="downloadAsImage()">🖼️ Download as Image</button>
+                <button class="download-option" onclick="downloadAsPDF()">📄 Download as PDF</button>
+            </div>
+        </div>
+        <button class="btn" onclick="saveContent()">💾 Save Progress</button>
+    </div>
+
+    <script>
+        let currentView = 'edit';
+
+        // View switching functionality
+        function switchView(view) {
+            if (view) {
+                currentView = view;
+            } else {
+                currentView = currentView === 'edit' ? 'funnel' : 'edit';
+            }
+
+            const editView = document.querySelector('.funnel');
+            const funnelView = document.getElementById('funnelView');
+            const toggleOptions = document.querySelectorAll('.toggle-option');
+
+            if (currentView === 'funnel') {
+                editView.style.display = 'none';
+                funnelView.classList.add('active');
+                toggleOptions[0].classList.remove('active');
+                toggleOptions[1].classList.add('active');
+                updateFunnelView();
+            } else {
+                editView.style.display = 'flex';
+                funnelView.classList.remove('active');
+                toggleOptions[0].classList.add('active');
+                toggleOptions[1].classList.remove('active');
+            }
+        }
+
+        // Update funnel view with current data
+        function updateFunnelView() {
+            Object.keys(stageData).forEach(stageId => {
+                const container = document.querySelector(`[data-stage="${stageId}"]`);
+                if (!container) return;
+
+                const channelCards = container.querySelectorAll('.channel-card');
+
+                const channels = [];
+                channelCards.forEach(card => {
+                    const name = card.querySelector('.channel-name').textContent.trim();
+                    if (name) {
+                        channels.push(name);
+                    }
+                });
+
+                // Update channel display in funnel
+                const channelsDisplay = document.getElementById(`${stageId}-channels-display`);
+                if (channelsDisplay) {
+                    if (channels.length > 0) {
+                        channelsDisplay.textContent = channels.slice(0, 3).join(' • ') + (channels.length > 3 ? '...' : '');
+                    } else {
+                        channelsDisplay.textContent = 'Click to add channels';
+                    }
+                }
+
+                // Update detailed view
+                const channelsDetail = document.getElementById(`${stageId}-channels-detail`);
+                if (channelsDetail) {
+                    channelsDetail.innerHTML = '';
+
+                    channelCards.forEach(card => {
+                        const name = card.querySelector('.channel-name').textContent.trim();
+                        const notes = card.querySelector('.channel-notes').textContent.trim();
+
+                        if (name) {
+                            const channelEl = document.createElement('div');
+                            channelEl.className = 'detail-channel';
+                            channelEl.innerHTML = `
+                                <strong>${name}</strong>
+                                ${notes ? `<br><small style="opacity: 0.8;">${notes}</small>` : ''}
+                            `;
+                            channelsDetail.appendChild(channelEl);
+                        }
+                    });
+                }
+
+                // Update notes detail (now shows combined info)
+                const notesDetail = document.getElementById(`${stageId}-notes-detail`);
+                if (notesDetail) {
+                    const hasContent = Array.from(channelCards).some(card =>
+                        card.querySelector('.channel-notes').textContent.trim()
+                    );
+                    notesDetail.textContent = hasContent ? 'See individual channel notes above' : 'No notes defined yet';
+                }
+
+                // Update funnel stage title and emoji
+                const funnelTitle = document.querySelector(`[data-funnel-stage="${stageId}"] .funnel-title`);
+                if (funnelTitle && stageData[stageId]) {
+                    const emojiSpan = funnelTitle.querySelector('span:first-child');
+                    const titleSpan = funnelTitle.querySelector('span:last-child');
+                    if (emojiSpan) emojiSpan.textContent = stageData[stageId].emoji;
+                    if (titleSpan) titleSpan.textContent = stageData[stageId].title;
+                }
+            });
+        }
+
+        // Toggle details in funnel view
+        function toggleDetails(detailId) {
+            const detail = document.getElementById(detailId);
+            const allDetails = document.querySelectorAll('.funnel-details');
+
+            // Close all other details
+            allDetails.forEach(d => {
+                if (d.id !== detailId) {
+                    d.classList.remove('show');
+                }
+            });
+
+            // Toggle current detail
+            detail.classList.toggle('show');
+        }
+
+        // Expand all details in funnel view
+        function expandAll() {
+            const allDetails = document.querySelectorAll('.funnel-details');
+            allDetails.forEach(detail => {
+                detail.classList.add('show');
+            });
+        }
+
+        // Collapse all details in funnel view
+        function collapseAll() {
+            const allDetails = document.querySelectorAll('.funnel-details');
+            allDetails.forEach(detail => {
+                detail.classList.remove('show');
+            });
+        }
+
+        // Add new channel to a stage
+        function addChannel(stage) {
+            const container = document.querySelector(`[data-stage="${stage}"]`);
+            const addButton = container.querySelector('.add-channel');
+
+            const channelCard = document.createElement('div');
+            channelCard.className = 'channel-card';
+            channelCard.innerHTML = `
+                <div class="channel-header">
+                    <div class="channel-name editable" contenteditable="true" data-placeholder="Channel name"></div>
+                    <button class="remove-channel" onclick="removeChannel(this)">✕</button>
+                </div>
+                <div class="channel-notes editable" contenteditable="true" data-placeholder="Add notes for this channel..."></div>
+            `;
+
+            container.insertBefore(channelCard, addButton);
+
+            // Focus on the new channel name
+            const nameField = channelCard.querySelector('.channel-name');
+            nameField.focus();
+        }
+
+        // Remove a channel
+        function removeChannel(button) {
+            const channelCard = button.closest('.channel-card');
+            const container = channelCard.closest('.channels-container');
+
+            // Don't allow removing if it's the last channel
+            const channelCards = container.querySelectorAll('.channel-card');
+            if (channelCards.length <= 1) {
+                alert('You must have at least one channel per stage.');
+                return;
+            }
+
+            channelCard.remove();
+        }
+
+        // Template selection
+        let currentTemplate = 'classic';
+
+        function selectTemplate(template) {
+            currentTemplate = template;
+
+            // Update active template button
+            document.querySelectorAll('.template-option').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-template="${template}"]`).classList.add('active');
+
+            // Apply template to funnel container
+            const funnelContainer = document.querySelector('.funnel-container');
+            funnelContainer.className = `funnel-container template-${template}`;
+        }
+
+        // Stage management
+        let stageCounter = 4; // Start after the default 4 stages
+        let stageData = {
+            awareness: { title: 'AWARENESS', subtitle: 'Top of Funnel', emoji: '🎯', color: 'hsl(0 0% 15%)' },
+            consideration: { title: 'CONSIDERATION', subtitle: 'Middle of Funnel', emoji: '🤔', color: 'hsl(0 0% 25%)' },
+            conversion: { title: 'CONVERSION', subtitle: 'Bottom of Funnel', emoji: '💰', color: 'hsl(0 0% 35%)' },
+            retention: { title: 'RETENTION', subtitle: 'Post-Purchase', emoji: '🔄', color: 'hsl(0 0% 45%)' }
+        };
+
+        function updateTitle(title) {
+            // Update the main title
+            document.title = title;
+        }
+
+        function updateStageTitle(stageId, title) {
+            if (stageData[stageId]) {
+                stageData[stageId].title = title;
+            }
+            updateFunnelView();
+        }
+
+        function updateStageSubtitle(stageId, subtitle) {
+            if (stageData[stageId]) {
+                stageData[stageId].subtitle = subtitle;
+            }
+            updateFunnelView();
+        }
+
+        function addNewStage() {
+            const stageId = `stage_${stageCounter++}`;
+            const emojis = ['🎯', '🤔', '💰', '🔄', '⭐', '🚀', '💡', '🎨', '📊', '🔥'];
+            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+            const grayValue = Math.max(15, Math.min(85, 15 + (Object.keys(stageData).length * 10)));
+
+            // Add to stage data
+            stageData[stageId] = {
+                title: 'NEW STAGE',
+                subtitle: 'Custom Stage',
+                emoji: randomEmoji,
+                color: `hsl(0 0% ${grayValue}%)`
+            };
+
+            // Create the stage HTML
+            const stageHtml = `
+                <div class="funnel-shape"></div>
+                <div class="stage" data-stage-id="${stageId}">
+                    <div class="stage-header" style="background: ${stageData[stageId].color};">
+                        <span style="font-size: 1.25rem;">${randomEmoji}</span>
+                        <input type="text" class="stage-title" value="NEW STAGE" onchange="updateStageTitle('${stageId}', this.value)">
+                        <input type="text" class="stage-subtitle" value="Custom Stage" style="font-size: 0.75rem; margin-left: auto; opacity: 0.8;" onchange="updateStageSubtitle('${stageId}', this.value)">
+                        <button class="remove-stage" onclick="removeStage('${stageId}')">✕</button>
+                    </div>
+                    <div class="stage-content">
+                        <div class="section">
+                            <h3>Media Channels Media Channels & Strategies Notes</h3>
+                            <div class="channels-container" data-stage="${stageId}">
+                                <div class="channel-card">
+                                    <div class="channel-header">
+                                        <div class="channel-name editable" contenteditable="true" data-placeholder="Channel name"></div>
+                                        <button class="remove-channel" onclick="removeChannel(this)">✕</button>
+                                    </div>
+                                    <div class="channel-notes editable" contenteditable="true" data-placeholder="Add notes for this channel..."></div>
+                                </div>
+                                <div class="add-channel" onclick="addChannel('${stageId}')">
+                                    + Add New Channel
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Insert before the add stage button
+            const addButton = document.querySelector('.add-stage-btn');
+            addButton.insertAdjacentHTML('beforebegin', stageHtml);
+
+            // Add to funnel view
+            addStageToFunnelView(stageId);
+
+            // Focus on the new stage title
+            const newStage = document.querySelector(`[data-stage-id="${stageId}"] .stage-title`);
+            newStage.focus();
+            newStage.select();
+        }
+
+        function removeStage(stageId) {
+            // Don't allow removing if it's the last stage
+            if (Object.keys(stageData).length <= 1) {
+                alert('You must have at least one stage.');
+                return;
+            }
+
+            // Remove from DOM
+            const stageElement = document.querySelector(`[data-stage-id="${stageId}"]`);
+            const prevShape = stageElement.previousElementSibling;
+            if (prevShape && prevShape.classList.contains('funnel-shape')) {
+                prevShape.remove();
+            }
+            stageElement.remove();
+
+            // Remove from data
+            delete stageData[stageId];
+
+            // Remove from funnel view
+            const funnelStage = document.querySelector(`[data-funnel-stage="${stageId}"]`);
+            if (funnelStage) {
+                funnelStage.remove();
+            }
+        }
+
+        function addStageToFunnelView(stageId) {
+            const stage = stageData[stageId];
+            const stageCount = Object.keys(stageData).length;
+            const width = Math.max(200, 900 - (stageCount - 1) * 100);
+
+            const funnelStageHtml = `
+                <div class="funnel-stage" data-funnel-stage="${stageId}">
+                    <div class="funnel-polygon" style="width: min(${width}px, 90vw); height: 100px; background: ${stage.color}; clip-path: polygon(0 0, 100% 0, 92% 100%, 8% 100%);" onclick="toggleDetails('${stageId}-details')">
+                        <div class="funnel-content">
+                            <div class="funnel-title">
+                                <span>${stage.emoji}</span>
+                                <span>${stage.title}</span>
+                            </div>
+                            <div class="funnel-channels" id="${stageId}-channels-display">Click to view channels</div>
+                        </div>
+                    </div>
+                    <div class="funnel-details" id="${stageId}-details">
+                        <div class="detail-section">
+                            <h4>Media Channels</h4>
+                            <div class="detail-channels" id="${stageId}-channels-detail"></div>
+                        </div>
+                        <div class="detail-section">
+                            <h4>Notes</h4>
+                            <div class="detail-notes" id="${stageId}-notes-detail">No notes defined yet</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Insert before funnel controls
+            const funnelControls = document.querySelector('.funnel-controls');
+            funnelControls.insertAdjacentHTML('beforebegin', funnelStageHtml);
+        }
+
+        function resetToDefault() {
+            if (confirm('This will reset the funnel to default marketing stages. Are you sure?')) {
+                // Reset stage data
+                stageData = {
+                    awareness: { title: 'AWARENESS', subtitle: 'Top of Funnel', emoji: '🎯', color: 'hsl(0 0% 15%)' },
+                    consideration: { title: 'CONSIDERATION', subtitle: 'Middle of Funnel', emoji: '🤔', color: 'hsl(0 0% 25%)' },
+                    conversion: { title: 'CONVERSION', subtitle: 'Bottom of Funnel', emoji: '💰', color: 'hsl(0 0% 35%)' },
+                    retention: { title: 'RETENTION', subtitle: 'Post-Purchase', emoji: '🔄', color: 'hsl(0 0% 45%)' }
+                };
+
+                // Reset title
+                document.querySelector('.header h1 input').value = 'Marketing Funnel';
+                document.title = 'Editable Marketing Funnel';
+
+                // Reset stage titles
+                document.querySelector('[data-stage-id="awareness"] .stage-title').value = 'AWARENESS';
+                document.querySelector('[data-stage-id="awareness"] .stage-subtitle').value = 'Top of Funnel';
+                document.querySelector('[data-stage-id="consideration"] .stage-title').value = 'CONSIDERATION';
+                document.querySelector('[data-stage-id="consideration"] .stage-subtitle').value = 'Middle of Funnel';
+                document.querySelector('[data-stage-id="conversion"] .stage-title').value = 'CONVERSION';
+                document.querySelector('[data-stage-id="conversion"] .stage-subtitle').value = 'Bottom of Funnel';
+                document.querySelector('[data-stage-id="retention"] .stage-title').value = 'RETENTION';
+                document.querySelector('[data-stage-id="retention"] .stage-subtitle').value = 'Post-Purchase';
+
+                // Remove any custom stages
+                document.querySelectorAll('[data-stage-id]').forEach(stage => {
+                    const stageId = stage.getAttribute('data-stage-id');
+                    if (!['awareness', 'consideration', 'conversion', 'retention'].includes(stageId)) {
+                        const prevShape = stage.previousElementSibling;
+                        if (prevShape && prevShape.classList.contains('funnel-shape')) {
+                            prevShape.remove();
+                        }
+                        stage.remove();
+
+                        // Remove from funnel view
+                        const funnelStage = document.querySelector(`[data-funnel-stage="${stageId}"]`);
+                        if (funnelStage) {
+                            funnelStage.remove();
+                        }
+                    }
+                });
+
+                updateFunnelView();
+            }
+        }
+
+        // Download functionality
+        function toggleDownloadMenu() {
+            const menu = document.getElementById('downloadMenu');
+            menu.classList.toggle('show');
+        }
+
+        // Close download menu when clicking outside
+        document.addEventListener('click', function (e) {
+            const menu = document.getElementById('downloadMenu');
+            const button = e.target.closest('.btn-download');
+            if (!button && !menu.contains(e.target)) {
+                menu.classList.remove('show');
+            }
+        });
+
+        async function downloadAsImage() {
+            const menu = document.getElementById('downloadMenu');
+            menu.classList.remove('show');
+
+            // Temporarily switch to funnel view for capture if in edit view
+            const wasEditView = currentView === 'edit';
+            if (wasEditView) {
+                switchView('funnel');
+                await new Promise(resolve => setTimeout(resolve, 500)); // Wait for transition
+            }
+
+            try {
+                const element = currentView === 'funnel' ?
+                    document.getElementById('funnelView') :
+                    document.querySelector('.container');
+
+                const canvas = await html2canvas(element, {
+                    backgroundColor: null,
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true
+                });
+
+                const link = document.createElement('a');
+                link.download = `marketing-funnel-${currentView}-${new Date().toISOString().split('T')[0]}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+
+                // Show success message
+                showMessage('Image downloaded successfully! 🖼️');
+
+            } catch (error) {
+                console.error('Error generating image:', error);
+                showMessage('Error generating image. Please try again.', 'error');
+            }
+
+            // Switch back to edit view if needed
+            if (wasEditView) {
+                switchView('edit');
+            }
+        }
+
+        async function downloadAsPDF() {
+            const menu = document.getElementById('downloadMenu');
+            menu.classList.remove('show');
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+
+                // Add title
+                pdf.setFontSize(20);
+                pdf.setTextColor(44, 62, 80);
+                pdf.text('Marketing Funnel Strategy', 20, 30);
+
+                // Add date
+                pdf.setFontSize(10);
+                pdf.setTextColor(149, 165, 166);
+                pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 40);
+
+                let yPosition = 60;
+                const stages = ['awareness', 'consideration', 'conversion', 'retention'];
+                const stageNames = ['AWARENESS', 'CONSIDERATION', 'CONVERSION', 'RETENTION'];
+                const stageEmojis = ['🎯', '🤔', '💰', '🔄'];
+
+                stages.forEach((stage, index) => {
+                    const container = document.querySelector(`[data-stage="${stage}"]`);
+                    const channelCards = container.querySelectorAll('.channel-card');
+
+                    // Stage header
+                    pdf.setFontSize(16);
+                    pdf.setTextColor(44, 62, 80);
+                    pdf.text(`${stageEmojis[index]} ${stageNames[index]}`, 20, yPosition);
+                    yPosition += 15;
+
+                    // Channels and their strategies
+                    if (channelCards.length > 0) {
+                        pdf.setFontSize(12);
+                        pdf.setTextColor(52, 73, 94);
+                        pdf.text('Media Channels & Notes:', 25, yPosition);
+                        yPosition += 10;
+
+                        channelCards.forEach(card => {
+                            const name = card.querySelector('.channel-name').textContent.trim();
+                            const notes = card.querySelector('.channel-notes').textContent.trim();
+
+                            if (name) {
+                                // Channel name
+                                pdf.setFontSize(11);
+                                pdf.setTextColor(52, 73, 94);
+                                pdf.text(`• ${name}`, 30, yPosition);
+                                yPosition += 8;
+
+                                // Channel notes
+                                if (notes) {
+                                    pdf.setFontSize(9);
+                                    pdf.setTextColor(127, 140, 141);
+                                    const lines = pdf.splitTextToSize(notes, 150);
+                                    lines.forEach(line => {
+                                        pdf.text(line, 35, yPosition);
+                                        yPosition += 5;
+                                    });
+                                }
+                                yPosition += 3;
+                            }
+                        });
+                    }
+
+                    yPosition += 10;
+
+                    // Add new page if needed
+                    if (yPosition > 250 && index < stages.length - 1) {
+                        pdf.addPage();
+                        yPosition = 30;
+                    }
+                });
+
+                pdf.save(`marketing-funnel-${new Date().toISOString().split('T')[0]}.pdf`);
+                showMessage('PDF downloaded successfully! 📄');
+
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                showMessage('Error generating PDF. Please try again.', 'error');
+            }
+        }
+
+        function showMessage(message, type = 'success') {
+            const messageEl = document.createElement('div');
+            messageEl.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'error' ? '#e74c3c' : '#2ecc71'};
+                color: white;
+                padding: 15px 25px;
+                border-radius: 10px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                z-index: 10000;
+                font-weight: 500;
+                animation: slideIn 0.3s ease;
+            `;
+            messageEl.textContent = message;
+            document.body.appendChild(messageEl);
+
+            setTimeout(() => {
+                messageEl.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => messageEl.remove(), 300);
+            }, 3000);
+        }
+
+        // Add CSS for message animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Auto-save functionality
+        function saveContent() {
+            const data = {
+                stageData: stageData,
+                title: document.querySelector('.header h1 input').value,
+                template: currentTemplate,
+                stages: {}
+            };
+
+            // Save all stages dynamically
+            Object.keys(stageData).forEach(stageId => {
+                const container = document.querySelector(`[data-stage="${stageId}"]`);
+                if (container) {
+                    const channelCards = container.querySelectorAll('.channel-card');
+
+                    const channels = [];
+                    channelCards.forEach(card => {
+                        const name = card.querySelector('.channel-name').textContent.trim();
+                        const notes = card.querySelector('.channel-notes').textContent.trim();
+
+                        if (name) {
+                            channels.push({
+                                name: name,
+                                notes: notes
+                            });
+                        }
+                    });
+
+                    data.stages[stageId] = {
+                        channels: channels
+                    };
+                }
+            });
+
+            localStorage.setItem('marketingFunnelData', JSON.stringify(data));
+
+            // Update funnel view if active
+            if (currentView === 'funnel') {
+                updateFunnelView();
+            }
+
+            // Visual feedback
+            showMessage('Progress saved successfully! 💾');
+        }
+
+        // Load saved content
+        function loadContent() {
+            const saved = localStorage.getItem('marketingFunnelData');
+            if (saved) {
+                const data = JSON.parse(saved);
+
+                // Load title
+                if (data.title) {
+                    document.querySelector('.header h1 input').value = data.title;
+                    document.title = data.title;
+                }
+
+                // Load template
+                if (data.template) {
+                    selectTemplate(data.template);
+                }
+
+                // Load stage data
+                if (data.stageData) {
+                    stageData = data.stageData;
+
+                    // Update stage titles and subtitles
+                    Object.keys(stageData).forEach(stageId => {
+                        const stageElement = document.querySelector(`[data-stage-id="${stageId}"]`);
+                        if (stageElement) {
+                            const titleInput = stageElement.querySelector('.stage-title');
+                            const subtitleInput = stageElement.querySelector('.stage-subtitle');
+                            if (titleInput) titleInput.value = stageData[stageId].title;
+                            if (subtitleInput) subtitleInput.value = stageData[stageId].subtitle;
+                        }
+                    });
+                }
+
+                // Load channel data
+                const stages = data.stages || data; // Support old format
+                Object.keys(stages).forEach(stageId => {
+                    if (stages[stageId] && stages[stageId].channels) {
+                        const container = document.querySelector(`[data-stage="${stageId}"]`);
+                        if (container) {
+                            const existingCards = container.querySelectorAll('.channel-card');
+
+                            // Remove existing cards except the first one
+                            for (let i = 1; i < existingCards.length; i++) {
+                                existingCards[i].remove();
+                            }
+
+                            // Load channels
+                            stages[stageId].channels.forEach((channelData, index) => {
+                                let channelCard;
+
+                                if (index === 0 && existingCards.length > 0) {
+                                    // Use the first existing card
+                                    channelCard = existingCards[0];
+                                } else {
+                                    // Create new card
+                                    channelCard = document.createElement('div');
+                                    channelCard.className = 'channel-card';
+                                    channelCard.innerHTML = `
+                                        <div class="channel-header">
+                                            <div class="channel-name editable" contenteditable="true" data-placeholder="Channel name"></div>
+                                            <button class="remove-channel" onclick="removeChannel(this)">✕</button>
+                                        </div>
+                                        <div class="channel-notes editable" contenteditable="true" data-placeholder="Add notes for this channel..."></div>
+                                    `;
+                                    const addButton = container.querySelector('.add-channel');
+                                    container.insertBefore(channelCard, addButton);
+                                }
+
+                                // Set the content
+                                const nameElement = channelCard.querySelector('.channel-name');
+                                const notesElement = channelCard.querySelector('.channel-notes');
+
+                                if (channelData.name) {
+                                    nameElement.textContent = channelData.name;
+                                }
+                                if (channelData.notes) {
+                                    notesElement.textContent = channelData.notes;
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        }
+
+        // Auto-save on content change
+        document.addEventListener('input', function (e) {
+            if (e.target.classList.contains('editable')) {
+                clearTimeout(window.autoSaveTimeout);
+                window.autoSaveTimeout = setTimeout(() => {
+                    saveContent();
+                    if (currentView === 'funnel') {
+                        updateFunnelView();
+                    }
+                }, 2000);
+            }
+        });
+
+        // Load content on page load
+        window.addEventListener('load', () => {
+            loadContent();
+            updateFunnelView();
+        });
+
+        // Add some interactive effects
+        document.querySelectorAll('.editable').forEach(element => {
+            element.addEventListener('focus', function () {
+                this.style.transform = 'scale(1.02)';
+            });
+
+            element.addEventListener('blur', function () {
+                this.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+
+</html>

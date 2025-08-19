@@ -6,14 +6,60 @@
   <title>Contact Form</title>
 
   <!-- GTM inside the iframe -->
-  <script>
-    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});
-    var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;
-    j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-PF9FDBKK');
-    window.dataLayer = window.dataLayer || [];
-    function dl(event, params={}) { window.dataLayer.push({ event, ...params }); }
-  </script>
+<!-- GTM inside the iframe -->
+<script>
+  (function (w,d,s,l,i){
+    w[l]=w[l]||[]; w[l].push({'gtm.start': new Date().getTime(), event:'gtm.js'});
+    var f=d.getElementsByTagName(s)[0], j=d.createElement(s), dl=l!='dataLayer'?'&l='+l:'';
+    j.async=true; j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl; f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-PF9FDBKK');
+
+  // convenience push
+  window.dataLayer = window.dataLayer || [];
+  function dl(event, params={}) { window.dataLayer.push({ event, ...params }); }
+
+  // ---- bridge to parent ----
+  (function () {
+    // Set this to the EXACT origin of the parent site (no trailing slash)
+    var PARENT_ORIGIN = 'https://YOUR-PARENT-DOMAIN.tld';
+
+    // send once guard (avoids double fires)
+    var sent = false;
+    function sendToParent(payload){
+      if (sent) return;
+      sent = true;
+      try {
+        window.parent.postMessage({
+          type: 'lead_submit',
+          // keep it non-PII
+          form_id: payload.form_id || undefined,
+          form_name: payload.form_name || undefined
+        }, PARENT_ORIGIN);
+      } catch(e) { /* no-op */ }
+    }
+
+    // 1) Generic hook: when the form element submits
+    document.addEventListener('submit', function(e){
+      if (!(e.target instanceof HTMLFormElement)) return;
+      sendToParent({ form_id: e.target.id || '', form_name: e.target.getAttribute('name') || '' });
+    }, true);
+
+    // 2) Optional: if your GTM in-iframe pushes a specific event (safer for “success only”)
+    //    Replace 'contact_form_success' with your actual event name if you have one.
+    var _push = window.dataLayer.push;
+    window.dataLayer.push = function () {
+      var args = Array.prototype.slice.call(arguments);
+      try {
+        var evt = (args[0] && args[0].event) || '';
+        if (evt === 'contact_form_success' || evt === 'generate_lead') {
+          sendToParent({ form_id: args[0].form_id || '', form_name: args[0].form_name || '' });
+        }
+      } catch(e) {}
+      return _push.apply(window.dataLayer, args);
+    };
+  })();
+</script>
+
 
   <!-- Google reCAPTCHA -->
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
